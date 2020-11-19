@@ -28,7 +28,7 @@ var g_canvasSize = 600;
  
 const g_initialX = g_canvasSize/2;
 const g_initialY = g_canvasSize/2;
-const g_blockSize = g_canvasSize/40;
+const g_blockSize = g_canvasSize/30;
 const g_blockColor = 10;
 const g_headColor = 100;
  
@@ -136,55 +136,93 @@ class Snake {
         //this is the head block
         this.blocks.push(new Block(new Position(g_initialX, g_initialY),snakecolors.HEAD));
     }
- 
-    goRight() {
 
-        if(this.direction == directions.LEFT){
-
-        }
-        else{
-            console.log("I am going Right ");
- 
-            this.setDirection(directions.RIGHT);
-        }
-        
-    }
- 
- 
-    goLeft(){
-
-        if(this.direction == directions.RIGHT){
-
-        }
-        else{
-            console.log("I am going Left ");
-            this.setDirection(directions.LEFT);
-        }
-    }
- 
-    goUp(){
-
-        if(this.direction == directions.DOWN){
-
-        }
-        else{
-            console.log("I am going Up ");
-            this.setDirection(directions.UP);
-        }
-    }
- 
-    goDown(){
-
-        if(this.direction == directions.UP){
-
-        }
-        else{
-            console.log("I am going Down");
-            this.setDirection(directions.DOWN);
-        }
-        
-    }
     
+    
+    // returns true, if the user is asking the Snake to turn in the opposite direction
+    checkOppositeDirection(newDirection) {
+        
+        var currentDirection = this.direction;
+
+        switch (newDirection) {
+
+
+            case directions.RIGHT:
+                return (currentDirection == directions.LEFT);
+                break; 
+            case directions.LEFT:
+                return (currentDirection == directions.RIGHT); 
+                break;
+            case directions.UP:
+                return (currentDirection == directions.DOWN);
+                break;
+            case directions.DOWN:
+                return (currentDirection == directions.UP);
+                break;
+        }
+    }
+ 
+ 
+    // directional key has been found, we need to go
+    go(newDirection) {
+
+        this.setToStart();
+
+        if (!(this.checkOppositeDirection(newDirection))) {
+            this.setDirection(newDirection);
+        }
+    }
+
+
+    // // asks the snake to go to the right
+    // goRight() {
+
+    //     // set the snake in motion in case it was not already moving
+        
+    // }
+
+    // // asks the snake to go to the Left
+    // goLeft() {
+
+    //     // set the snake in motion in case it was not already moving
+    //     this.setToStart();
+
+    //     if (!(this.checkOppositeDirection(directions.LEFT))) {
+
+    //         console.log("I am going Right ");
+ 
+    //         this.setDirection(directions.LEFT);
+    //     }
+    // }
+
+    // // asks the snake to go to the right
+    // goUp() {
+
+    //     // set the snake in motion in case it was not already moving
+    //     this.setToStart();
+
+    //     if (!(this.checkOppositeDirection(directions.UP))) {
+
+    //         console.log("I am going Right ");
+ 
+    //         this.setDirection(directions.RIGHT); 
+    //     }
+    // }
+
+    // // asks the snake to go to the right
+    // goRight() {
+
+    //     // set the snake in motion in case it was not already moving
+    //     this.setToStart();
+
+    //     if (!(this.checkOppositeDirection(directions.RIGHT))) {
+
+    //         console.log("I am going Right ");
+ 
+    //         this.setDirection(directions.RIGHT);
+    //     }
+    // }
+ 
     
     setDirection(directionValue) {
  
@@ -252,55 +290,122 @@ class Snake {
         // }
     }
  
-    move(){
+
+    // returns true if the head block has reached the RIGHT wall
+    reachedTheRightWall(headOfSnake){
  
-        //this will start moving the snake
+        let rightWall = g_canvasSize;
+        return (headOfSnake.position.x + g_blockSize >= rightWall);
+    }
+
+    // returns true if the head block has reached the LEFT wall
+    reachedTheLeftWall(headOfSnake){
  
-        // this.isMoving = true;
-        if(this.isMoving){
+        let leftWall = 0;
+        return (headOfSnake.position.x /*- g_blockSize*/ <= leftWall);
+    }
+
+    
+
+    // returns true if the head block has reached the BOTTOM wall
+    reachedTheBottomWall(headOfSnake){
  
-            if(this.checkIfReachedRightWall()){
-                // console.log("reached");
-            }
-                
-            else{
-                // console.log("has not reached");
-                this.isMoving = true;
-            
-    
-                for(var i=0; i < this.blocks.length;i++){
-    
-                    this.blocks[i].moveBlock(this.direction);
-    
-                }
-    
-            } 
+        let bottomWall = g_canvasSize;
+        return (headOfSnake.position.y + g_blockSize >= bottomWall);
+    }
+
+    // returns true if the head block has reached the TOP wall
+    reachedTheTopWall(headOfSnake){
+ 
+        let topWall = 0;
+        return (headOfSnake.position.y /*- g_blockSize*/ <= topWall);
+    }
+
+
+    // returns true if the head block has reached a wall
+    reachedTheWall() {
+        let currentDirection = this.direction;
+        let headOfSnake = this.blocks[0]; // this will give the head of the snake (first element of the array)
+
+        switch (currentDirection) {
+
+            case (directions.RIGHT):
+                return this.reachedTheRightWall(headOfSnake);
+                break;
+
+            case (directions.LEFT):
+                return this.reachedTheLeftWall(headOfSnake);
+                break;
+
+            case (directions.UP):
+                return this.reachedTheTopWall(headOfSnake);
+                break;
+
+            case (directions.DOWN):
+                return this.reachedTheBottomWall(headOfSnake);
+                break;
+
+
         }
-            
+
+    }
+
+    //this will start moving the snake
+    move(){
+
+         if(this.isMoving){
+
+            if (!(this.reachedTheWall()))
+
+                // invoke the move function of each block of the snake
+                for(var i=0; i < this.blocks.length;i++){
+        
+                    this.blocks[i].moveBlock(this.direction);
+
+                }
  
+    
+        }
     }
  
     checkIfReachedRightWall(){
  
         var headBlock = this.blocks[0];
  
-        // console.log("inside check if reached")
-        // console.log(headBlock.position.x);
-        
         if( (headBlock.position.x + ( g_canvasSize / 30 ) ) >= g_canvasSize){
  
+            this.setToStop();
             return true;
             
         }
  
         else{
  
+            for(var i=0; i < 100;i++){
+    
+                this.blocks[i].moveBlock(this.direction);
+
+            }
             return false;
  
         }
  
     }
+
+    // checkIfReachedLeftWall(){
+
+    //     if( (this.blocks[0].position.x - (g_canvasSize/30)) <= 0){
+    //         this.setToStop();
+    //         return true;
+    //     }
+    //     else{
+    //         return false;
+    //     }
+    
+    // }
  
+    
+
     stop(){
  
     }
@@ -426,23 +531,19 @@ function onkeypressed(event) {
     switch (event.key) {
  
         case ARROW_DOWN:
-            mySnake.goDown();
-            mySnake.setToStart();
+            mySnake.go(directions.DOWN);
             break;
  
         case ARROW_UP:
-            mySnake.goUp();
-            mySnake.setToStart();
+            mySnake.go(directions.UP);
             break;
  
         case ARROW_LEFT:
-            mySnake.goLeft();
-            mySnake.setToStart();
+            mySnake.go(directions.LEFT);
             break;
  
         case ARROW_RIGHT:
-            mySnake.goRight();
-            mySnake.setToStart();
+            mySnake.go(directions.RIGHT);
             break;
         
         case SPACE_KEY:
