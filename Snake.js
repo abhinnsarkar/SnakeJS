@@ -6,12 +6,13 @@
 //                        Further, Space bar will stop the snake 
 //                        Further, Snake cannot go in the opposite direction
 
+//November 18 : We made it so that the snake will stop when it hits a wall
 
 // global variables go here //
  
 // REMOVE THIS TESTER PRINT AFTER DEVELOPMENT IS COMPLETED
-// const SHOW_ON = true;pppppppppppppppppppp
-const SHOW_ON = false;
+// const SHOW_ON = true;
+const SHOW_ON = true;
 function show(msg) {
  
     if (SHOW_ON) {
@@ -24,11 +25,16 @@ function show_always(msg) {
     console.log(msg);
 }
  
-var g_canvasSize = 600;
+const g_canvasSize = 600;
+
+const g_numberOfSections = 5;
+
+const g_centreGrid = (g_numberOfSections + 1)/2;
+show(g_centreGrid);
  
 const g_initialX = g_canvasSize/2;
 const g_initialY = g_canvasSize/2;
-const g_blockSize = g_canvasSize/30;
+const g_blockSize = g_canvasSize/g_numberOfSections;
 const g_blockColor = 10;
 const g_headColor = 100;
  
@@ -48,27 +54,43 @@ const directions = {  // this is an example of enumeration
  
 const snakecolors = {
  
-    HEAD: 100,
-    BODY:10
+    HEAD: 10,
+    BODY:100
 }
  
  
 const g_distance = 15;
  
+//returns a position object with pixel values, given the row and col of the grid
+function gridToPixel(rowGrid,colGrid){
+
+    var col = colGrid - 1;
+    var row = rowGrid - 1;
+    var positionObject = new Position(col*g_blockSize , row*g_blockSize);
+
+    show(rowGrid,colGrid);
+
+    return positionObject;
+
+
+}
+
 class Block {
  
     //attributes = size,position,color,shape,speed,direction
     //behavior = move up,move down, move right,move left,start,stop,draw
  
-    // creates a block, given only the position
-    constructor(blockPosition,color) {
+    // creates a block, given the row number, col number, and colour
+    constructor(rowGrid, colGrid, color) {
  
         // using the passed parameters
-        this.position = blockPosition;   
+        this.position = gridToPixel(rowGrid,colGrid);   
  
         // using the global constants
         this.blockSize =  g_blockSize;
         this.blockColor =  color;
+
+        show("Color of the block is " + color);
  
     }
  
@@ -79,7 +101,7 @@ class Block {
         rect(this.position.x,this.position.y,this.blockSize,this.blockSize,5);
  
     }
- 
+    //makes block move based on set/current direction
     moveBlock(direction){
  
         switch(direction){
@@ -98,10 +120,7 @@ class Block {
             
             case directions.RIGHT:
                 this.position.x = this.position.x + g_blockSize;
-                
- 
- 
-    
+
         }
         
     }
@@ -134,11 +153,14 @@ class Snake {
  
     createHead(){
         //this is the head block
-        this.blocks.push(new Block(new Position(g_initialX, g_initialY),snakecolors.HEAD));
+        // this.blocks.push(new Block(g_centreGrid, g_centreGrid,snakecolors.HEAD));
+        this.blocks.push(new Block(g_centreGrid, g_centreGrid,10));
+    
+    
     }
 
-    
-    
+
+
     // returns true, if the user is asking the Snake to turn in the opposite direction
     checkOppositeDirection(newDirection) {
         
@@ -161,7 +183,6 @@ class Snake {
                 break;
         }
     }
- 
  
     // directional key has been found, we need to go
     go(newDirection) {
@@ -223,7 +244,6 @@ class Snake {
     //     }
     // }
  
-    
     setDirection(directionValue) {
  
         this.direction = directionValue;
@@ -269,7 +289,7 @@ class Snake {
         this.blocks.push(newBlock);
  
     }
- 
+    
     setToStart(){
         this.isMoving = true;
     }
@@ -305,8 +325,6 @@ class Snake {
         return (headOfSnake.position.x /*- g_blockSize*/ <= leftWall);
     }
 
-    
-
     // returns true if the head block has reached the BOTTOM wall
     reachedTheBottomWall(headOfSnake){
  
@@ -320,7 +338,6 @@ class Snake {
         let topWall = 0;
         return (headOfSnake.position.y /*- g_blockSize*/ <= topWall);
     }
-
 
     // returns true if the head block has reached a wall
     reachedTheWall() {
@@ -404,11 +421,6 @@ class Snake {
     
     // }
  
-    
-
-    stop(){
- 
-    }
  
     // buildRandomSnake() {
  
@@ -443,8 +455,6 @@ class Snake {
         }
  
     }
-    
- 
  
 }
  
@@ -504,19 +514,57 @@ document.addEventListener("keydown",function(event) {
 function setup(){
  
     createCanvas(g_canvasSize,g_canvasSize);
-    frameRate(10);
- 
- 
+    frameRate(7);
+
+
     
+}
+
+
+function setGridLineColour(){
+
+    let THIN = 1;
+    strokeWeight(THIN);
+    
+    let GREY_COLOR = 10;
+    stroke(GREY_COLOR);
+}
+    
+function divideCanvas(){
+    
+    // console.log("Dividing the canvas");
+    setGridLineColour();
+    // var numberOfLines = 10;
+    // var space = g_canvasSize / numberOfLines;
+    
+    for(var i = 0; i<g_numberOfSections; i++){
+
+        var drawLines = i*g_blockSize;
+
+        // console.log("Drawing a line");
+
+        line(drawLines, 0, drawLines, g_canvasSize);
+        line(0, drawLines, g_canvasSize, drawLines);
+
+    }
+ 
 }
  
 function draw(){
     
- 
+ //   console.log("Draw Function");
+
     background(57,104,64);
- 
+   // console.log("Background has been drawn");
+
+
+    divideCanvas(); 
+  
+
+
     mySnake.paint();
     mySnake.move();
+ 
     
     
 }
