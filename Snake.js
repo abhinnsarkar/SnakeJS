@@ -8,6 +8,8 @@
 
 //November 18 : We made it so that the snake will stop when it hits a wall
 
+//November 21 : we added a grid functionality so that we are not using any pixel(x and y) values and drew a target
+
 // global variables go here //
  
 // REMOVE THIS TESTER PRINT AFTER DEVELOPMENT IS COMPLETED
@@ -27,10 +29,10 @@ function show_always(msg) {
  
 const g_canvasSize = 600;
 
-const g_numberOfSections = 5;
+const g_numberOfSections = 21;
 
 const g_centreGrid = (g_numberOfSections + 1)/2;
-show(g_centreGrid);
+// show(g_centreGrid);
  
 const g_initialX = g_canvasSize/2;
 const g_initialY = g_canvasSize/2;
@@ -55,7 +57,8 @@ const directions = {  // this is an example of enumeration
 const snakecolors = {
  
     HEAD: 10,
-    BODY:100
+    BODY:100,
+    TARGET:200
 }
  
  
@@ -68,7 +71,7 @@ function gridToPixel(rowGrid,colGrid){
     var row = rowGrid - 1;
     var positionObject = new Position(col*g_blockSize , row*g_blockSize);
 
-    show(rowGrid,colGrid);
+    // show(rowGrid,colGrid);
 
     return positionObject;
 
@@ -84,7 +87,10 @@ class Block {
     constructor(rowGrid, colGrid, color) {
  
         // using the passed parameters
-        this.position = gridToPixel(rowGrid,colGrid);   
+        // this.position = gridToPixel(rowGrid,colGrid);   
+
+        this.row = rowGrid;
+        this.col = colGrid;
  
         // using the global constants
         this.blockSize =  g_blockSize;
@@ -96,10 +102,18 @@ class Block {
  
     drawBlock(){
  
+        // show("entered drawBlock");
         noStroke();
         fill(this.blockColor);
-        rect(this.position.x,this.position.y,this.blockSize,this.blockSize,5);
- 
+        
+        var position = gridToPixel(this.row,this.col);
+
+        // show(positionObject);
+        
+        rect(position.x,position.y,this.blockSize,this.blockSize);
+
+        // show(position.x + " ,  " + position.y);
+
     }
     //makes block move based on set/current direction
     moveBlock(direction){
@@ -107,19 +121,37 @@ class Block {
         switch(direction){
 
             case directions.UP:
-                this.position.y = this.position.y - g_blockSize;
+                // this.position.y = this.position.y - g_blockSize;
+
+                // this.col = this.col - g_blockSize;
+
+                this.row = this.row -1;
+
                 break;
  
             case directions.DOWN:
-                this.position.y = this.position.y + g_blockSize;
+                // this.position.y = this.position.y + g_blockSize;
+
+                // this.col = this.col + g_blockSize;
+                this.row = this.row + 1;
+
                 break;
 
             case directions.LEFT:
-                this.position.x = this.position.x - g_blockSize;
+                // this.position.x = this.position.x - g_blockSize;
+
+                // this.row = this.row - g_blockSize;
+                this.col = this.col - 1;
+
+
                 break;
             
             case directions.RIGHT:
-                this.position.x = this.position.x + g_blockSize;
+
+                // this.position.x = this.position.x + g_blockSize;
+
+                // this.row = this.row + g_blockSize;
+                this.col = this.col + 1;
 
         }
         
@@ -154,7 +186,7 @@ class Snake {
     createHead(){
         //this is the head block
         // this.blocks.push(new Block(g_centreGrid, g_centreGrid,snakecolors.HEAD));
-        this.blocks.push(new Block(g_centreGrid, g_centreGrid,10));
+        this.blocks.push(new Block(g_centreGrid, g_centreGrid,snakecolors.HEAD));
     
     
     }
@@ -284,7 +316,7 @@ class Snake {
             
         }
  
-        var newBlock = new Block(new Position(newX, newY),snakecolors.BODY);
+        var newBlock = new Block(new Position(newX, newY),snakecolors.HEAD);
  
         this.blocks.push(newBlock);
  
@@ -314,29 +346,41 @@ class Snake {
     // returns true if the head block has reached the RIGHT wall
     reachedTheRightWall(headOfSnake){
  
-        let rightWall = g_canvasSize;
-        return (headOfSnake.position.x + g_blockSize >= rightWall);
+        // let rightWall = g_canvasSize;
+        // return (headOfSnake.position.x + g_blockSize >= rightWall);
+
+
+        return (headOfSnake.col == g_numberOfSections);
     }
 
     // returns true if the head block has reached the LEFT wall
     reachedTheLeftWall(headOfSnake){
  
-        let leftWall = 0;
-        return (headOfSnake.position.x /*- g_blockSize*/ <= leftWall);
+        // let leftWall = 0;
+        // return (headOfSnake.position.x /*- g_blockSize*/ <= leftWall);
+
+        return (headOfSnake.col == 1);
+
     }
 
     // returns true if the head block has reached the BOTTOM wall
     reachedTheBottomWall(headOfSnake){
  
-        let bottomWall = g_canvasSize;
-        return (headOfSnake.position.y + g_blockSize >= bottomWall);
+        // let bottomWall = g_canvasSize;
+        // return (headOfSnake.position.y + g_blockSize >= bottomWall);
+
+        return (headOfSnake.row == g_numberOfSections);
+
     }
 
     // returns true if the head block has reached the TOP wall
     reachedTheTopWall(headOfSnake){
  
-        let topWall = 0;
-        return (headOfSnake.position.y /*- g_blockSize*/ <= topWall);
+        // let topWall = 0;
+        // return (headOfSnake.position.y /*- g_blockSize*/ <= topWall);
+
+        return (headOfSnake.row == 1);
+
     }
 
     // returns true if the head block has reached a wall
@@ -385,29 +429,29 @@ class Snake {
         }
     }
  
-    checkIfReachedRightWall(){
+    // checkIfReachedRightWall(){
  
-        var headBlock = this.blocks[0];
+    //     var headBlock = this.blocks[0];
  
-        if( (headBlock.position.x + ( g_canvasSize / 30 ) ) >= g_canvasSize){
+    //     if( (headBlock.position.x + ( g_canvasSize / 30 ) ) >= g_canvasSize){
  
-            this.setToStop();
-            return true;
+    //         this.setToStop();
+    //         return true;
             
-        }
+    //     }
  
-        else{
+    //     else{
  
-            for(var i=0; i < 100;i++){
+    //         for(var i=0; i < 100;i++){
     
-                this.blocks[i].moveBlock(this.direction);
+    //             this.blocks[i].moveBlock(this.direction);
 
-            }
-            return false;
+    //         }
+    //         return false;
  
-        }
+    //     }
  
-    }
+    // }
 
     // checkIfReachedLeftWall(){
 
@@ -460,11 +504,35 @@ class Snake {
  
 class Target{
  
-//attributes = size,position,color,shape
+//attributes = block
 //behavior = draw,eaten
  
+    constructor(){
+
+        this.block = new Block(16,16,snakecolors.TARGET);
+        // this.block.drawBlock();
+
+    }
+
+
+    paint(){
+
+        // i am running a for loop from 0 to the length of the blocks array(which is 0)
+        //then i am taking the index value 'i' of the blocks array
+        //then i am drawing that block
+        
+            this.block.drawBlock();
+    
  
+
+
+
+
+    }
+
 }
+
+
  
 class Canvas{
  
@@ -490,10 +558,12 @@ class Position{
 // Add Global Functionality here 
  
 var mySnake = new Snake();
+var myTarget = new Target();
+
  
-mySnake.grow();
-mySnake.grow();
-mySnake.grow();
+// mySnake.grow();
+// mySnake.grow();
+// mySnake.grow();
  
 // grow();
 // grow();
@@ -514,7 +584,7 @@ document.addEventListener("keydown",function(event) {
 function setup(){
  
     createCanvas(g_canvasSize,g_canvasSize);
-    frameRate(7);
+    frameRate(5);
 
 
     
@@ -560,19 +630,20 @@ function draw(){
 
     divideCanvas(); 
   
-
-
     mySnake.paint();
     mySnake.move();
- 
+
+    myTarget.paint();
     
+ 
+    // Target.block.drawBlock();
     
 }
  
 // keyboard event 
 function onkeypressed(event) {
  
-    show(">>>" + event.key + "<<<");
+    // show(">>>" + event.key + "<<<");
  
  
  
