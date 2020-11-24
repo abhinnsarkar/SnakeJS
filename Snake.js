@@ -10,6 +10,8 @@
 
 //November 21 : we added a grid functionality so that we are not using any pixel(x and y) values and drew a target
 
+//November 23 : I made the target disappear when it collides with the snake head
+
 // global variables go here //
  
 // REMOVE THIS TESTER PRINT AFTER DEVELOPMENT IS COMPLETED
@@ -26,9 +28,21 @@ function show(msg) {
 function show_always(msg) {
     console.log(msg);
 }
- 
-const g_canvasSize = 600;
 
+ 
+const FRAME_SPEED = {  // this is an example of enumeration
+ 
+    VERY_SLOW: 1,
+    SLOW:3,
+    MEDIUM:5,
+    FAST:7,
+    VERY_FAST:10
+}
+
+
+
+const g_canvasSize = 600;
+const g_FrameRate = FRAME_SPEED.FAST;   // higher is faster
 const g_numberOfSections = 21;
 
 const g_centreGrid = (g_numberOfSections + 1)/2;
@@ -96,7 +110,11 @@ class Block {
         this.blockSize =  g_blockSize;
         this.blockColor =  color;
 
-        show("Color of the block is " + color);
+        // show("Color of the block is " + color);
+        
+        // show(this.row);
+        // show(this.col);
+
  
     }
  
@@ -157,6 +175,7 @@ class Block {
         
     }
  
+
 }
  
 class Snake {
@@ -226,56 +245,6 @@ class Snake {
         }
     }
 
-
-    // // asks the snake to go to the right
-    // goRight() {
-
-    //     // set the snake in motion in case it was not already moving
-        
-    // }
-
-    // // asks the snake to go to the Left
-    // goLeft() {
-
-    //     // set the snake in motion in case it was not already moving
-    //     this.setToStart();
-
-    //     if (!(this.checkOppositeDirection(directions.LEFT))) {
-
-    //         console.log("I am going Right ");
- 
-    //         this.setDirection(directions.LEFT);
-    //     }
-    // }
-
-    // // asks the snake to go to the right
-    // goUp() {
-
-    //     // set the snake in motion in case it was not already moving
-    //     this.setToStart();
-
-    //     if (!(this.checkOppositeDirection(directions.UP))) {
-
-    //         console.log("I am going Right ");
- 
-    //         this.setDirection(directions.RIGHT); 
-    //     }
-    // }
-
-    // // asks the snake to go to the right
-    // goRight() {
-
-    //     // set the snake in motion in case it was not already moving
-    //     this.setToStart();
-
-    //     if (!(this.checkOppositeDirection(directions.RIGHT))) {
-
-    //         console.log("I am going Right ");
- 
-    //         this.setDirection(directions.RIGHT);
-    //     }
-    // }
- 
     setDirection(directionValue) {
  
         this.direction = directionValue;
@@ -383,10 +352,16 @@ class Snake {
 
     }
 
+
+    getHead() {
+
+        return (this.blocks[0]);
+    }
+
     // returns true if the head block has reached a wall
     reachedTheWall() {
         let currentDirection = this.direction;
-        let headOfSnake = this.blocks[0]; // this will give the head of the snake (first element of the array)
+        let headOfSnake = this.getHead(); // this will give the head of the snake (first element of the array)
 
         switch (currentDirection) {
 
@@ -429,68 +404,6 @@ class Snake {
         }
     }
  
-    // checkIfReachedRightWall(){
- 
-    //     var headBlock = this.blocks[0];
- 
-    //     if( (headBlock.position.x + ( g_canvasSize / 30 ) ) >= g_canvasSize){
- 
-    //         this.setToStop();
-    //         return true;
-            
-    //     }
- 
-    //     else{
- 
-    //         for(var i=0; i < 100;i++){
-    
-    //             this.blocks[i].moveBlock(this.direction);
-
-    //         }
-    //         return false;
- 
-    //     }
- 
-    // }
-
-    // checkIfReachedLeftWall(){
-
-    //     if( (this.blocks[0].position.x - (g_canvasSize/30)) <= 0){
-    //         this.setToStop();
-    //         return true;
-    //     }
-    //     else{
-    //         return false;
-    //     }
-    
-    // }
- 
- 
-    // buildRandomSnake() {
- 
-    //     var positions = new Array(this.length);
-    //     for (var i = 0; i< this.length; i++) {
- 
-    //         var x = g_initialX + (g_distance * i);
-    //         var y = g_initialY;
- 
- 
-    //         positions[i] = new Position(x,y);
- 
-    //         //we are changing the color of the first block so we know where the head is
-    //         if(i==0){
-    //             this.blocks[i] = new Block(positions[i] , g_headColor);    
-    //         }
-    //         else{
-    //             this.blocks[i] = new Block(positions[i] , g_blockColor);
-    //         }
-            
- 
-    //     }
- 
-    // }
- 
- 
     // paints all the blocks within this snake
     paint() {
  
@@ -501,6 +414,10 @@ class Snake {
     }
  
 }
+g_targetColAndRowLimit = g_numberOfSections - 1;
+var target_Row_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
+var target_Col_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
+
  
 class Target{
  
@@ -509,8 +426,31 @@ class Target{
  
     constructor(){
 
-        this.block = new Block(16,16,snakecolors.TARGET);
+        // this.block = new Block(16,16,snakecolors.TARGET);
         // this.block.drawBlock();
+
+
+        //todo: the target should not be in the first or last row/collumn
+
+        var target_Row = Math.floor(Math.random() * g_targetColAndRowLimit);
+        var target_Col = Math.floor(Math.random() * g_targetColAndRowLimit);
+
+        // var target_Row_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
+        // var target_Col_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
+
+        // if(g_targetCollisionCount == 1){
+            this.block = new Block(target_Row,target_Col,snakecolors.TARGET);
+        // }
+        // else{
+        //     this.block = new Block(target_Row_Block2,target_Col_Block2,snakecolors.TARGET);
+        // }
+        
+
+        
+        
+
+        show(target_Row);
+        show(target_Col);
 
     }
 
@@ -522,13 +462,46 @@ class Target{
         //then i am drawing that block
         
             this.block.drawBlock();
-    
- 
-
-
-
 
     }
+
+}
+
+
+var g_targetCollisionCount  = 0;
+function reachedTarget(){
+
+    if(g_targetCollisionCount == 0){
+  
+        if(myTarget.block.row == mySnake.getHead().row && myTarget.block.col == mySnake.getHead().col){
+
+            // show("COLLISION HAS OCCURED!!!")
+            
+            g_targetCollisionCount++;
+
+            show("Collsion Count = " + g_targetCollisionCount);
+
+            return true;
+
+
+
+        }
+        else{
+
+            myTarget.paint();
+
+            return false;
+
+
+        }
+
+    }
+
+    if(g_targetCollisionCount > 1){
+        this.block = new Block(target_Row_Block2,target_Col_Block2,snakecolors.TARGET);
+        myTarget.paint();
+    }
+
 
 }
 
@@ -560,7 +533,10 @@ class Position{
 var mySnake = new Snake();
 var myTarget = new Target();
 
- 
+
+
+
+
 // mySnake.grow();
 // mySnake.grow();
 // mySnake.grow();
@@ -584,7 +560,7 @@ document.addEventListener("keydown",function(event) {
 function setup(){
  
     createCanvas(g_canvasSize,g_canvasSize);
-    frameRate(5);
+    frameRate(g_FrameRate);
 
 
     
@@ -619,7 +595,8 @@ function divideCanvas(){
     }
  
 }
- 
+
+
 function draw(){
     
  //   console.log("Draw Function");
@@ -629,15 +606,10 @@ function draw(){
 
 
     divideCanvas(); 
-  
+
+    reachedTarget();
     mySnake.paint();
     mySnake.move();
-
-    myTarget.paint();
-    
- 
-    // Target.block.drawBlock();
-    
 }
  
 // keyboard event 
@@ -671,6 +643,5 @@ function onkeypressed(event) {
     }
  
 }
+// show(mySnake.getHead().row);
  
- 
-
