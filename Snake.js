@@ -44,6 +44,7 @@ const FRAME_SPEED = {  // this is an example of enumeration
 const g_canvasSize = 600;
 const g_FrameRate = FRAME_SPEED.FAST;   // higher is faster
 const g_numberOfSections = 21;
+var g_targetCollisionCount  = 0;
 
 const g_centreGrid = (g_numberOfSections + 1)/2;
 // show(g_centreGrid);
@@ -174,6 +175,13 @@ class Block {
         }
         
     }
+    //this gives the block a new position
+    newPos(newRow,newCol){
+
+        this.row = newRow;
+        this.col = newCol;
+
+    }
  
 
 }
@@ -260,34 +268,73 @@ class Snake {
         // find the x and y coordinate of the last block
         // reduce x by block size for the new block
  
-        var newXR = this.blocks[this.blocks.length - 1].position.x;
-        var newYU = this.blocks[this.blocks.length - 1].position.y;
-        var newXL = this.blocks[this.blocks.length - 1].position.x;
-        var newYD = this.blocks[this.blocks.length - 1].position.y;
+
+        show("entered grow");
+        // var newXR = this.getTail().row;
+        // var newYU = this.getTail().col;
+        // var newXL = this.getTail().row;
+        // var newYD = this.getTail().col;
  
-        var newX = this.blocks[this.blocks.length - 1].position.x;
-        var newY = this.blocks[this.blocks.length - 1].position.y;
+
+        var newC;
+        var newR;
+
+        var C = this.getTail().col;
+        var R = this.getTail().row;
  
+
+        // show("newXR => " + newXR);
+        // show("newYU => " + newYU);
+        // show("newXL => " + newXL);
+        // show("newYD => " + newYD);
+        // show("newX  => " + newX);
+        // show("newY  => " + newY);
+
         switch (this.direction) {
  
             case directions.RIGHT:
-                newXR = newXR - g_blockSize
+                show("direction is right");
+                newC = C - 1;
+                newR = R;
+                break;
     
             case directions.LEFT:
-                newXL = newXL - g_blockSize;
+                show("direction is left");
+                newC = C + 1;
+                newR = R;
+                break;
                 //
             case directions.UP:
-                newYU = newYU - g_blockSize
+                show("direction is up");
+                newR = R + 1;
+                newC = C;
+                break;
                 //
             case directions.DOWN:
-                newYD = newYD + g_blockSize
+                show("direction is down");
+                newR = R - 1;
+                newC = C;
+                break;
                 //
             
         }
+
+        // show("After the direction switch ----------------");
+        // show("newXR => " + newXR);
+        // show("newYU => " + newYU);
+        // show("newXL => " + newXL);
+        // show("newYD => " + newYD);
+        // show("newX  => " + newX);
+        // show("newY  => " + newY);
  
-        var newBlock = new Block(new Position(newX, newY),snakecolors.HEAD);
- 
+        show("creating newBlock");
+        // var newBlock = new Block(new Position(newX, newY),snakecolors.HEAD);
+        var newBlock = new Block(newR,newC,snakecolors.BODY);
+
+        show("new block created, pushing it now");
         this.blocks.push(newBlock);
+
+        show("new block has been pushed");
  
     }
     
@@ -358,6 +405,12 @@ class Snake {
         return (this.blocks[0]);
     }
 
+    getTail() {
+
+        let arrLength = this.blocks.length - 1
+        return (this.blocks[arrLength]);
+    }
+
     // returns true if the head block has reached a wall
     reachedTheWall() {
         let currentDirection = this.direction;
@@ -414,9 +467,9 @@ class Snake {
     }
  
 }
-g_targetColAndRowLimit = g_numberOfSections - 1;
-var target_Row_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
-var target_Col_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
+// g_targetColAndRowLimit = g_numberOfSections - 1;
+// var target_Row_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
+// var target_Col_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
 
  
 class Target{
@@ -429,17 +482,21 @@ class Target{
         // this.block = new Block(16,16,snakecolors.TARGET);
         // this.block.drawBlock();
 
-
-        //todo: the target should not be in the first or last row/collumn
-
-        var target_Row = Math.floor(Math.random() * g_targetColAndRowLimit);
-        var target_Col = Math.floor(Math.random() * g_targetColAndRowLimit);
+        //
+        
+        // this.getTargetPosition();
+        
+        var targetRow = this.getTargetPosition();
+        var targetCol = this.getTargetPosition();
+        // var target_Row = Math.floor(Math.random() * g_numberOfSections);
+        // var target_Col = Math.floor(Math.random() * g_numberOfSections);
 
         // var target_Row_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
         // var target_Col_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
 
         // if(g_targetCollisionCount == 1){
-            this.block = new Block(target_Row,target_Col,snakecolors.TARGET);
+            this.block = new Block(targetRow,targetCol,snakecolors.TARGET);
+            // this.block = new Block(target_Row_Block2,target_Col_Block2,snakecolors.TARGET);
         // }
         // else{
         //     this.block = new Block(target_Row_Block2,target_Col_Block2,snakecolors.TARGET);
@@ -449,37 +506,66 @@ class Target{
         
         
 
-        show(target_Row);
-        show(target_Col);
+        // show(target_Row);
+        // show(target_Col);
 
     }
 
-
+    //draws the target
     paint(){
-
-        // i am running a for loop from 0 to the length of the blocks array(which is 0)
-        //then i am taking the index value 'i' of the blocks array
-        //then i am drawing that block
         
-            this.block.drawBlock();
+        this.block.drawBlock();
+
+    }
+
+    //gets a random position for the target between 1 and the number of sections
+    getTargetPosition(){
+        
+        // var targetRow = Math.floor(Math.random() * g_numberOfSections);
+
+
+        var targetPosition = Math.floor(Math.random() * g_numberOfSections);
+
+        if(targetPosition == 0){
+            targetPosition = 1;
+        }
+
+        return targetPosition;
+    }
+    
+    
+    // this will take the the target and repsoition it
+    // we will get a neww random target position
+    // create block with new position
+    reposition(){
+
+        var newRow = this.getTargetPosition();
+        var newCol = this.getTargetPosition();
+
+        // this.block = new Block(newRow,newCol,snakecolors.TARGET);
+
+        this.block.newPos(newRow,newCol);
+
 
     }
 
 }
 
 
-var g_targetCollisionCount  = 0;
+//returns true if snake head has reached target else false
+
 function reachedTarget(){
 
-    if(g_targetCollisionCount == 0){
+    // if(g_targetCollisionCount == 0){
   
         if(myTarget.block.row == mySnake.getHead().row && myTarget.block.col == mySnake.getHead().col){
 
             // show("COLLISION HAS OCCURED!!!")
             
-            g_targetCollisionCount++;
+            // g_targetCollisionCount++;
 
-            show("Collsion Count = " + g_targetCollisionCount);
+            // show("Collsion Count = " + g_targetCollisionCount);
+            // showCollisonCount();
 
             return true;
 
@@ -488,24 +574,110 @@ function reachedTarget(){
         }
         else{
 
-            myTarget.paint();
+            // myTarget.paint();
 
             return false;
 
 
         }
 
+    // }
+
+    // if(g_targetCollisionCount > 0){
+    //     // this.block = new Block(target_Row_Block2,target_Col_Block2,snakecolors.TARGET);
+    //     // myTarget2.paint();
+    //     // // show("Collsion Count = " + g_targetCollisionCount);
+    //     // g_targetCollisionCount = 2;;
+    //     // showCollisonCount();
+     
+        
+
+    //     if(myTarget2.block.row == mySnake.getHead().row && myTarget2.block.col == mySnake.getHead().col){
+
+    //         // show("COLLISION HAS OCCURED!!!")
+            
+    //         g_targetCollisionCount++;
+
+    //         // show("Collsion Count = " + g_targetCollisionCount);
+    //         showCollisonCount();
+
+    //         return true;
+
+
+
+    //     }
+    //     else{
+
+    //         myTarget.paint();
+
+    //         return false;
+
+
+    //     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 
-    if(g_targetCollisionCount > 1){
-        this.block = new Block(target_Row_Block2,target_Col_Block2,snakecolors.TARGET);
-        myTarget.paint();
-    }
 
 
+
+// function reachedTarget2(){
+
+//     if(g_targetCollisionCount >= 1){
+//         // this.block = new Block(target_Row_Block2,target_Col_Block2,snakecolors.TARGET);
+//         // myTarget2.paint();
+//         // // show("Collsion Count = " + g_targetCollisionCount);
+//         // g_targetCollisionCount = 2;;
+//         // showCollisonCount();
+     
+        
+
+//         if(myTarget2.block.row == mySnake.getHead().row && myTarget2.block.col == mySnake.getHead().col){
+
+//             // show("COLLISION HAS OCCURED!!!")
+            
+//             g_targetCollisionCount = 2;
+
+//             // show("Collsion Count = " + g_targetCollisionCount);
+//             showCollisonCount();
+
+//             return true;
+
+
+
+//         }
+//         else{
+
+//             myTarget2.paint();
+
+//             return false;
+
+
+//         }
+//     }
+// }
+
+function showCollisonCount(){
+    show("Collsion Count = " + g_targetCollisionCount);
 }
-
-
  
 class Canvas{
  
@@ -532,6 +704,7 @@ class Position{
  
 var mySnake = new Snake();
 var myTarget = new Target();
+// var myTarget2 = new Target();
 
 
 
@@ -596,21 +769,40 @@ function divideCanvas(){
  
 }
 
-
-function draw(){
-    
- //   console.log("Draw Function");
-
+// paint the background and then draw the grid lines
+function createBackgroundWithGridLines() {
     background(57,104,64);
-   // console.log("Background has been drawn");
-
-
     divideCanvas(); 
 
-    reachedTarget();
-    mySnake.paint();
-    mySnake.move();
 }
+
+
+// given a snake, this will paint it and ask it to move
+function makeSnakeMove(snake) {
+    snake.paint();
+    snake.move();
+
+}
+
+// given a snake, this will grow it
+function growTheSnake(snake) {
+    snake.grow();
+}
+
+
+// given a Target, reposition it
+function repositionTarget(target) {
+    target.reposition();
+
+}
+
+function increaseScoreCount() {
+    //todo : rename this to a more appropriate variable name
+    g_targetCollisionCount++;
+    show( "Score Count = " + g_targetCollisionCount);
+}
+
+
  
 // keyboard event 
 function onkeypressed(event) {
@@ -644,4 +836,40 @@ function onkeypressed(event) {
  
 }
 // show(mySnake.getHead().row);
+
+
+//************************************************************************//
+//*                                                                      *//
+//*                                                                      *//
+//*              javascript runs this function in a loop                 *//
+//*                                                                      *//
+//*                                                                      *//
+//************************************************************************//
+function draw(){
+    
  
+    // create the background with the grid lines
+    createBackgroundWithGridLines();
+
+    //if the snakehead has reached the Target, 
+    //   target will disappear and reappear somewhere else
+    //   increase the score count
+    //   grow the snake
+    //else (snake head has not reached the target)
+    //   do nothing 
+
+    if (reachedTarget()) {
+        repositionTarget(myTarget);
+        increaseScoreCount();
+        growTheSnake(mySnake);
+    }
+    else {
+        // do nothing
+    }
+
+    myTarget.paint();
+
+    // make the snake move
+    makeSnakeMove(mySnake);
+    
+}
