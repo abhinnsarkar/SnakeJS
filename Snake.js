@@ -42,7 +42,7 @@ const FRAME_SPEED = {  // this is an example of enumeration
 
 
 const g_canvasSize = 600;
-const g_FrameRate = FRAME_SPEED.FAST;   // higher is faster
+const g_FrameRate = FRAME_SPEED.VERY_SLOW;   // higher is faster
 const g_numberOfSections = 21;
 var g_targetCollisionCount  = 0;
 
@@ -93,6 +93,17 @@ function gridToPixel(rowGrid,colGrid){
 
 }
 
+class Coordinate {
+
+    constructor(row,col) {
+
+        this.row = row;
+        this.col = col;
+
+    }
+
+}
+
 class Block {
  
     //attributes = size,position,color,shape,speed,direction
@@ -134,10 +145,16 @@ class Block {
         // show(position.x + " ,  " + position.y);
 
     }
+    
+    
+    setDirection(direction) {
+        this.direction = direction;
+    }
+    
     //makes block move based on set/current direction
-    moveBlock(direction){
+    moveBlock(){
  
-        switch(direction){
+        switch(this.direction){
 
             case directions.UP:
                 // this.position.y = this.position.y - g_blockSize;
@@ -195,20 +212,23 @@ class Snake {
  
         this.blocks = new Array(0);
  
-        // this.createInitialDirection();
+        this.createInitialDirection();
  
         this.createHead();
-        this.isMoving = false;
+        this.isMoving = true;
+
+        this.turningPoint = new Coordinate(0,0);
+
+        
  
     }
-    //
-    // // createInitialDirection(){
  
-    //     this.direction = directions.UP;
-    //     this.direction = directions.DOWN;
-    //     this.direction = directions.LEFT;
-    //     this.direction = directions.RIGHT;
-    // // }
+    //
+    createInitialDirection(){
+ 
+        this.prevDirection = directions.RIGHT;
+        this.direction = directions.RIGHT;
+    }
  
     createHead(){
         //this is the head block
@@ -253,14 +273,32 @@ class Snake {
         }
     }
 
+    
+    // when a new direction is provided, save the previous direction before setting the new direction
     setDirection(directionValue) {
  
-        this.direction = directionValue;
+        this.prevDirection = this.direction;  // save the current direction in the prev variable ; so RIGHT
+        this.direction = directionValue; // this will now be UP
+
+        let headOfSnake = this.getHead();
+
+        var turningPointRow = headOfSnake.row;
+        var turningPointCol = headOfSnake.col;
+
+        this.turningPoint = new Coordinate(turningPointRow, turningPointCol);
+
+
+        show("--------------------------------------------------------------------")
+        show("New Dir " + this.direction + " Prev Dir " + this.prevDirection);
+        show("turn point " + this.turningPoint.row + " " + this.turningPoint.col);
+
     }
  
     // this will grow the size of the snake by 1
     grow() {
  
+
+        // show("Inside grow of snake class " + this.direction);
         // check which direction the snake is going in
         // if the snake is going to the right, the new block should be added to the left
  
@@ -269,7 +307,7 @@ class Snake {
         // reduce x by block size for the new block
  
 
-        show("entered grow");
+        // show("entered grow");
         // var newXR = this.getTail().row;
         // var newYU = this.getTail().col;
         // var newXL = this.getTail().row;
@@ -293,25 +331,25 @@ class Snake {
         switch (this.direction) {
  
             case directions.RIGHT:
-                show("direction is right");
+                // show("direction is right");
                 newC = C - 1;
                 newR = R;
                 break;
     
             case directions.LEFT:
-                show("direction is left");
+                // show("direction is left");
                 newC = C + 1;
                 newR = R;
                 break;
                 //
             case directions.UP:
-                show("direction is up");
+                // show("direction is up");
                 newR = R + 1;
                 newC = C;
                 break;
                 //
             case directions.DOWN:
-                show("direction is down");
+                // show("direction is down");
                 newR = R - 1;
                 newC = C;
                 break;
@@ -327,14 +365,15 @@ class Snake {
         // show("newX  => " + newX);
         // show("newY  => " + newY);
  
-        show("creating newBlock");
+        // show("creating newBlock");
         // var newBlock = new Block(new Position(newX, newY),snakecolors.HEAD);
         var newBlock = new Block(newR,newC,snakecolors.BODY);
+        newBlock.setDirection(this.direction);
 
-        show("new block created, pushing it now");
+        // show("new block created, pushing it now");
         this.blocks.push(newBlock);
 
-        show("new block has been pushed");
+        // show("new block has been pushed");
  
     }
     
@@ -439,17 +478,49 @@ class Snake {
 
     }
 
+
+
+    // given a block, and a turning point, this returns true if the block has reached the turning point, else
+    // it returns a false
+    bodyHasReachedTurningPoint(bodyBlock) {
+
+        return ((bodyBlock.row == this.turningPoint.row) && (bodyBlock.col == this.turningPoint.col));
+
+    }
+
     //this will start moving the snake
     move(){
 
          if(this.isMoving){
 
+            // if not reached the wall, then keep the snake moving, else stop
             if (!(this.reachedTheWall()))
 
                 // invoke the move function of each block of the snake
-                for(var i=0; i < this.blocks.length;i++){
+
+                // headBlock needs to go in New Direction, whereas Body will go in Previous Direction
+
+                var headBlock = this.getHead();
+                headBlock.setDirection(this.direction);
+                headBlock.moveBlock();
+
+                for(var i=1; i < this.blocks.length;i++){
         
-                    this.blocks[i].moveBlock(this.direction);
+                    show("-----");
+                    show("block " + (i+1));
+
+                    var bodyBlock = this.blocks[i];
+                    // if body has reached the turning point, it should be pointed in new direction
+                    // otherwise it can keep going in previous direction
+
+                    if (this.bodyHasReachedTurningPoint(bodyBlock)) {
+                        show("... reached turn, go " + this.direction);
+                        bodyBlock.setDirection(this.direction);
+                    
+                    }
+                    
+                    bodyBlock.moveBlock();
+                    
 
                 }
  
@@ -465,7 +536,8 @@ class Snake {
         }
  
     }
- 
+    
+
 }
 // g_targetColAndRowLimit = g_numberOfSections - 1;
 // var target_Row_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
@@ -581,99 +653,9 @@ function reachedTarget(){
 
         }
 
-    // }
-
-    // if(g_targetCollisionCount > 0){
-    //     // this.block = new Block(target_Row_Block2,target_Col_Block2,snakecolors.TARGET);
-    //     // myTarget2.paint();
-    //     // // show("Collsion Count = " + g_targetCollisionCount);
-    //     // g_targetCollisionCount = 2;;
-    //     // showCollisonCount();
-     
-        
-
-    //     if(myTarget2.block.row == mySnake.getHead().row && myTarget2.block.col == mySnake.getHead().col){
-
-    //         // show("COLLISION HAS OCCURED!!!")
-            
-    //         g_targetCollisionCount++;
-
-    //         // show("Collsion Count = " + g_targetCollisionCount);
-    //         showCollisonCount();
-
-    //         return true;
-
-
-
-    //     }
-    //     else{
-
-    //         myTarget.paint();
-
-    //         return false;
-
-
-    //     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
     }
 
-
-
-
-// function reachedTarget2(){
-
-//     if(g_targetCollisionCount >= 1){
-//         // this.block = new Block(target_Row_Block2,target_Col_Block2,snakecolors.TARGET);
-//         // myTarget2.paint();
-//         // // show("Collsion Count = " + g_targetCollisionCount);
-//         // g_targetCollisionCount = 2;;
-//         // showCollisonCount();
-     
-        
-
-//         if(myTarget2.block.row == mySnake.getHead().row && myTarget2.block.col == mySnake.getHead().col){
-
-//             // show("COLLISION HAS OCCURED!!!")
-            
-//             g_targetCollisionCount = 2;
-
-//             // show("Collsion Count = " + g_targetCollisionCount);
-//             showCollisonCount();
-
-//             return true;
-
-
-
-//         }
-//         else{
-
-//             myTarget2.paint();
-
-//             return false;
-
-
-//         }
-//     }
-// }
 
 function showCollisonCount(){
     show("Collsion Count = " + g_targetCollisionCount);
@@ -734,7 +716,9 @@ function setup(){
  
     createCanvas(g_canvasSize,g_canvasSize);
     frameRate(g_FrameRate);
+    
 
+    growTheSnake(mySnake);
 
     
 }
@@ -781,11 +765,20 @@ function createBackgroundWithGridLines() {
 function makeSnakeMove(snake) {
     snake.paint();
     snake.move();
+    
+    
 
 }
 
 // given a snake, this will grow it
 function growTheSnake(snake) {
+    // show("enetered growTheSnake");
+
+    snake.grow();
+    snake.grow();
+    snake.grow();
+    snake.grow();
+    snake.grow();
     snake.grow();
 }
 
@@ -861,14 +854,17 @@ function draw(){
     if (reachedTarget()) {
         repositionTarget(myTarget);
         increaseScoreCount();
-        growTheSnake(mySnake);
+        // growTheSnake(mySnake);
     }
     else {
         // do nothing
     }
 
+    
+    
     myTarget.paint();
 
+    // mySnake.grow();
     // make the snake move
     makeSnakeMove(mySnake);
     
