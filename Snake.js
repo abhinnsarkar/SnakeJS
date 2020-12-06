@@ -14,6 +14,8 @@
 
 //November 30 : Made snake smooth and change direction
 
+//December 5 : Made snake bend at multiple points without breaking
+
 // global variables go here //
  
 // REMOVE THIS TESTER PRINT AFTER DEVELOPMENT IS COMPLETED
@@ -60,7 +62,7 @@ const FRAME_SPEED = {  // this is an example of enumeration
 
 const INITIAL_SNAKE_DIRECTION = directions.RIGHT;
 const CANVAS_SIZE = 600;
-const FRAME_RATE = FRAME_SPEED.SLOW;   // higher is faster
+const FRAME_RATE = FRAME_SPEED.MEDIUM;   // higher is faster
 const NUM_OF_SECTIONS = 21;
 
 var g_targetCollisionCount  = 0;
@@ -108,6 +110,14 @@ class Coordinate {
 
     }
 
+}
+
+class TurnFound {
+
+    constructor(foundBoolean, directionsValue) {
+        this.found = foundBoolean;
+        this.newDir = directionsValue;
+    }
 }
 
 class Block {
@@ -469,7 +479,29 @@ class Snake {
     // it returns a false
     bodyHasReachedTurningPoint(bodyBlock) {
 
-        return ((bodyBlock.row == this.turns.getLatestPosition().row) && (bodyBlock.col == this.turns.getLatestPosition().col));
+
+        // given the bodyBlock, check against each Turn in the Turns objects
+        // keep checking until you find a match, and return a true if match found
+        // if all turns have been checked, and match has not been found, then return a false
+
+        var found = false;
+        var newDirection;
+
+        for(var i = 0; ((i < this.turns.turnPos.length) && (!found)) ; i++){
+
+            if((bodyBlock.row == this.turns.turnPos[i].row) && (bodyBlock.col == this.turns.turnPos[i].col)){
+                found = true;
+                newDirection = this.turns.turnDir[i];
+            }
+
+        }
+
+        var returnObj = new TurnFound(found, newDirection);
+        
+        return (returnObj);
+
+
+        // return ((bodyBlock.row == this.turns.getLatestPosition().row) && (bodyBlock.col == this.turns.getLatestPosition().col));
 
     }
 
@@ -489,6 +521,7 @@ class Snake {
                 headBlock.setDirection(this.turns.getLatestDirection());
                 headBlock.moveBlock();
 
+                //repeat this for the body of the snake
                 for(var i=1; i < this.blocks.length;i++){
         
                     // show("-----");
@@ -498,9 +531,12 @@ class Snake {
                     // if body has reached the turning point, it should be pointed in new direction
                     // otherwise it can keep going in previous direction
 
-                    if (this.bodyHasReachedTurningPoint(bodyBlock)) {
-                        show("... reached turn, go " + this.turns.getLatestDirection());
-                        bodyBlock.setDirection(this.turns.getLatestDirection());
+
+                    var turnFound = this.bodyHasReachedTurningPoint(bodyBlock);
+
+                    if (turnFound.found) {
+                        show("... reached turn, go " + turnFound.newDir);
+                        bodyBlock.setDirection(turnFound.newDir);
                     
                     }
                     
@@ -758,7 +794,6 @@ var mySnake = new Snake();
 var myTarget = new Target();
 
  
- 
 document.addEventListener("keydown",function(event) {
  
     onkeypressed(event);
@@ -833,6 +868,10 @@ function makeSnakeMove(snake) {
 function growTheSnake(snake) {
     // show("enetered growTheSnake");
 
+    snake.grow();
+    snake.grow();
+    snake.grow();
+    snake.grow();
     snake.grow();
     snake.grow();
     snake.grow();
