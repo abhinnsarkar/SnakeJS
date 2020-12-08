@@ -46,7 +46,8 @@ const SNAKE_COLORS = {
  
     HEAD: 10,
     BODY:100,
-    TARGET:200
+    TARGET:200,
+    TAIL:50
 }
  
 const FRAME_SPEED = {  // this is an example of enumeration
@@ -62,9 +63,9 @@ const FRAME_SPEED = {  // this is an example of enumeration
 
 const INITIAL_SNAKE_DIRECTION = directions.RIGHT;
 const CANVAS_SIZE = 600;
-const FRAME_RATE = FRAME_SPEED.MEDIUM;   // higher is faster
+const FRAME_RATE = FRAME_SPEED.VERY_FAST;   // higher is faster
 const NUM_OF_SECTIONS = 21;
-
+const BODY_SIZE=21;
 var g_targetCollisionCount  = 0;
 
 const CENTER_GRID = (NUM_OF_SECTIONS + 1)/2;
@@ -145,7 +146,11 @@ class Block {
 
  
     }
- 
+
+    
+    changeColor(color) {
+        this.blockColor = color;
+    }
     drawBlock(){
  
         // show("entered drawBlock");
@@ -232,6 +237,7 @@ class Snake {
  
         this.createHead();
         this.isMoving = true;
+        this.hardStop = false;
 
         //this.turningPoint = new Coordinate(0,0);
 
@@ -264,7 +270,7 @@ class Snake {
     // returns true, if the user is asking the Snake to turn in the opposite direction
     checkOppositeDirection(newDirection) {
         
-        var currentDirection = this.direction;
+        var currentDirection = this.getHead().direction;
 
         switch (newDirection) {
 
@@ -312,9 +318,9 @@ class Snake {
 
         
 
-        show("--------------------------------------------------------------------")
-        show("New Dir " + this.turns.getLatestDirection() + " Prev Dir " + this.turns.getSecondFromLatestDirection());
-        show("turn point " + this.turns.getLatestPosition().row + " " + this.turns.getLatestPosition().col);
+        // show("--------------------------------------------------------------------")
+        // show("New Dir " + this.turns.getLatestDirection() + " Prev Dir " + this.turns.getSecondFromLatestDirection());
+        // show("turn point " + this.turns.getLatestPosition().row + " " + this.turns.getLatestPosition().col);
 
     }
  
@@ -328,6 +334,11 @@ class Snake {
 
         var newC;
         var newR;
+
+        if (! (this.blocks.length == 1)) {
+            this.getTail().changeColor(SNAKE_COLORS.BODY);
+        }
+        
 
         var C = this.getTail().col;
         var R = this.getTail().row;
@@ -362,7 +373,7 @@ class Snake {
         }
 
         
-        var newBlock = new Block(newR,newC,SNAKE_COLORS.BODY);
+        var newBlock = new Block(newR,newC,SNAKE_COLORS.TAIL);
         newBlock.setDirection(this.getTail().direction);
 
         // show("new block created, pushing it now");
@@ -373,11 +384,19 @@ class Snake {
     }
     
     setToStart(){
-        this.isMoving = true;
+        if (!(this.hardStop)) {
+            this.isMoving = true;
+        }
+        
     }
  
     setToStop(){
         this.isMoving = false;
+    }
+
+    setToHardStop() {
+        this.hardStop = true;
+        this.setToStop();
     }
  
     stopStart(){
@@ -505,13 +524,52 @@ class Snake {
 
     }
 
+
+    trap() {
+
+        var headBlock = this.blocks[0];
+        var firstBody = this.blocks[1];
+
+        let hr = headBlock.row;
+        let hc = headBlock.col;
+
+        let br = firstBody.row;
+        let bc = firstBody.col;
+
+
+
+        var fine = false;
+        if (br == hr) {
+            if ((bc == hc + 1) || (bc == hc - 1)) {
+                fine = true;
+            }
+        }
+        else if (bc == hc) {
+            if ((br == hr + 1) || (br == hr - 1)) {
+                fine = true;
+            }
+        }
+
+        return (fine);
+        
+
+
+    }
+
     //this will start moving the snake
     move(){
 
          if(this.isMoving){
 
-            // if not reached the wall, then keep the snake moving, else stop
-            if (!(this.reachedTheWall()))
+
+            if (!(this.trap())) {
+
+                this.setToHardStop();
+                this.turns.printYourself();
+            }
+            else {
+                // if not reached the wall, then keep the snake moving, else stop
+                if (!(this.reachedTheWall()))
 
                 // invoke the move function of each block of the snake
 
@@ -521,32 +579,40 @@ class Snake {
                 headBlock.setDirection(this.turns.getLatestDirection());
                 headBlock.moveBlock();
 
-                //repeat this for the body of the snake
-                for(var i=1; i < this.blocks.length;i++){
+                //repeat this for the body of the snake (except for the tail)
+                for(var i=1; i < this.blocks.length - 1;i++){    // -1 so that we can exclude the tail
         
-                    // show("-----");
-                    // show("block " + (i+1));
-
                     var bodyBlock = this.blocks[i];
                     // if body has reached the turning point, it should be pointed in new direction
                     // otherwise it can keep going in previous direction
 
-
                     var turnFound = this.bodyHasReachedTurningPoint(bodyBlock);
 
                     if (turnFound.found) {
-                        show("... reached turn, go " + turnFound.newDir);
+                        // show("... reached turn, go " + turnFound.newDir);
                         bodyBlock.setDirection(turnFound.newDir);
                     
                     }
                     
-                    bodyBlock.moveBlock();
-                    
-
+                    bodyBlock.moveBlock();      
                 }
- 
-    
-        }
+
+                var tailBlock = this.getTail();
+
+                // var turnFound = this.bodyHasReachedTurningPoint(tailBlock);
+                var turnFound = this.bodyHasReachedTurningPoint(tailBlock);
+                if (turnFound.found) {
+
+                    // show("entered if");
+                    tailBlock.setDirection(turnFound.newDir);
+                    this.turns.removeOldestTurn();
+
+                    
+                }
+
+                tailBlock.moveBlock();
+            }
+        }  
     }
  
     // paints all the blocks within this snake
@@ -711,7 +777,20 @@ class Turnings{
 
     }
     
+
     
+    //this method will print out the values of the properties
+    printYourself() {
+
+        show("-------- printing the turns -----------")
+
+        for (var i =0; i < this.turnPos.length; i++){
+
+            show ("Turn >> " + this.turnPos[i].row + "," + this.turnPos[i].col + " >> " + this.turnDir[i]);
+            
+        }
+
+    }
     //adding position of turn and direction turn in to arrays
     createNewTurn(coordObj,dir){
 
@@ -868,16 +947,11 @@ function makeSnakeMove(snake) {
 function growTheSnake(snake) {
     // show("enetered growTheSnake");
 
-    snake.grow();
-    snake.grow();
-    snake.grow();
-    snake.grow();
-    snake.grow();
-    snake.grow();
-    snake.grow();
-    snake.grow();
-    snake.grow();
-    snake.grow();
+    
+    
+    for (var i = 0; i < BODY_SIZE; i++) {
+        snake.grow();
+    }
 }
 
 
