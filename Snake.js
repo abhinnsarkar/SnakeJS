@@ -16,6 +16,8 @@
 
 //December 5 : Made snake bend at multiple points without breaking
 
+//December 7 : Troubleshooting why the Snake breaks off in some situations
+
 // global variables go here //
  
 // REMOVE THIS TESTER PRINT AFTER DEVELOPMENT IS COMPLETED
