@@ -18,6 +18,7 @@
 
 //December 7 : Troubleshooting why the Snake breaks off in some situations
 
+//December 8 : Made snake stop when it eats itself
 // global variables go here //
  
 // REMOVE THIS TESTER PRINT AFTER DEVELOPMENT IS COMPLETED
@@ -66,8 +67,8 @@ const FRAME_SPEED = {  // this is an example of enumeration
 const INITIAL_SNAKE_DIRECTION = directions.RIGHT;
 const CANVAS_SIZE = 600;
 const FRAME_RATE = FRAME_SPEED.VERY_FAST;   // higher is faster
-const NUM_OF_SECTIONS = 21;
-const BODY_SIZE=21;
+const NUM_OF_SECTIONS = 51;
+const BODY_SIZE=11;
 var g_targetCollisionCount  = 0;
 
 const CENTER_GRID = (NUM_OF_SECTIONS + 1)/2;
@@ -495,6 +496,29 @@ class Snake {
     }
 
 
+    //checks if the snake head has hit its own body
+    eatingSelf(){
+
+        var snakehead = this.getHead();
+        var eatingSnake = false;
+
+        for( var i = 1; i < this.blocks.length ; i++){
+
+            if(snakehead.row == this.blocks[i].row && snakehead.col == this.blocks[i].col){
+            
+                eatingSnake = true;
+
+
+            }
+
+            // return(snakehead.row == this.blocks[i].row && snakehead.col == this.blocks[i].col);
+
+        }
+
+        return eatingSnake;
+
+
+    }
 
     // given a block, and a turning point, this returns true if the block has reached the turning point, else
     // it returns a false
@@ -563,11 +587,15 @@ class Snake {
 
          if(this.isMoving){
 
+            // if(!(this.eatingSelf())){
 
-            if (!(this.trap())) {
+            // }
+
+
+            if (this.eatingSelf()) {
 
                 this.setToHardStop();
-                this.turns.printYourself();
+                show("SNAKE EATING SELF !! GAME OVER")
             }
             else {
                 // if not reached the wall, then keep the snake moving, else stop
@@ -892,7 +920,7 @@ function setup(){
     frameRate(FRAME_RATE);
     
 
-    growTheSnake(mySnake);
+    intialSnakeGrow(mySnake);
 
 
 
@@ -945,15 +973,20 @@ function makeSnakeMove(snake) {
 
 }
 
+
+function intialSnakeGrow(snake) {
+
+    for (var i = 0; i < BODY_SIZE; i++) {
+        growTheSnake(snake);
+    }
+}
+
+
 // given a snake, this will grow it
 function growTheSnake(snake) {
     // show("enetered growTheSnake");
-
+    snake.grow();
     
-    
-    for (var i = 0; i < BODY_SIZE; i++) {
-        snake.grow();
-    }
 }
 
 
@@ -1028,7 +1061,7 @@ function draw(){
     if (reachedTarget()) {
         repositionTarget(myTarget);
         increaseScoreCount();
-        // growTheSnake(mySnake);
+        growTheSnake(mySnake);
     }
     else {
         // do nothing
