@@ -20,6 +20,13 @@
 
 //December 8 : Made snake stop when it eats itself
 // global variables go here //
+
+//IDEAS//
+//--> ...Margins for target
+//--> ...Make snake come out opposite side when wall is hit
+//--> ...Textbox with scorecount and snake status
+//--> ...Sounds
+//--> ...Different shape for target
  
 // REMOVE THIS TESTER PRINT AFTER DEVELOPMENT IS COMPLETED
 // const SHOW_ON = true;
@@ -67,8 +74,8 @@ const FRAME_SPEED = {  // this is an example of enumeration
 const INITIAL_SNAKE_DIRECTION = directions.RIGHT;
 const CANVAS_SIZE = 600;
 const FRAME_RATE = FRAME_SPEED.VERY_FAST;   // higher is faster
-const NUM_OF_SECTIONS = 51;
-const BODY_SIZE=11;
+const NUM_OF_SECTIONS = 21;
+const BODY_SIZE=3;
 var g_targetCollisionCount  = 0;
 
 const CENTER_GRID = (NUM_OF_SECTIONS + 1)/2;
@@ -707,6 +714,16 @@ class Target{
 
     }
 
+    // targetMargins(targetPos){
+    //     if(targetPos == 1){
+    //         targetPos = 2;
+    //     }
+    //     if(targetPos == NUM_OF_SECTIONS){
+    //         targetPos = targetPos-2;
+    //     }
+
+    // }
+
     //gets a random position for the target between 1 and the number of sections
     getTargetPosition(){
         
@@ -714,11 +731,22 @@ class Target{
 
 
         var targetPosition = Math.floor(Math.random() * NUM_OF_SECTIONS);
+    
+        // var max = NUM_OF_SECTIONS - 1;
+        // var min = 0+1;
+    
 
-        if(targetPosition == 0){
-            targetPosition = 1;
+        // var targetPosition = Math.random() * (max - min) + min;
+        // Math.round(targetPosition);
+
+        if(targetPosition == 1){
+            targetPosition = 2;
         }
+        // if(targetPosition == NUM_OF_SECTIONS){
+        //     targetPosition = targetPosition-1;
+        // }
 
+        // this.targetMargins(targetPosition);
         return targetPosition;
     }
     
@@ -1002,6 +1030,11 @@ function increaseScoreCount() {
     show( "Score Count = " + g_targetCollisionCount);
 }
 
+function displayScore(){
+
+    document.getElementById("score").value = g_targetCollisionCount;
+
+}
 
  
 // keyboard event 
@@ -1062,13 +1095,16 @@ function draw(){
         repositionTarget(myTarget);
         increaseScoreCount();
         growTheSnake(mySnake);
+        displayScore();
     }
     else {
         // do nothing
     }
 
+
     
-    
+    // document.getElementById("score").value = g_targetCollisionCount;
+
     myTarget.paint();
 
     // mySnake.grow();
