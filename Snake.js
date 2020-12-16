@@ -21,6 +21,8 @@
 //December 8 : Made snake stop when it eats itself
 // global variables go here //
 
+//December 15 : Made a margin for target to appear in , 
+
 //IDEAS//
 //--> ...Margins for target
 //--> ...Make snake come out opposite side when wall is hit
@@ -77,6 +79,7 @@ const FRAME_RATE = FRAME_SPEED.VERY_FAST;   // higher is faster
 const NUM_OF_SECTIONS = 21;
 const BODY_SIZE=3;
 var g_targetCollisionCount  = 0;
+const MARGIN = 10; //enter the margin in precentage
 
 const CENTER_GRID = (NUM_OF_SECTIONS + 1)/2;
 // show(CENTER_GRID);
@@ -684,6 +687,8 @@ class Target{
         
         var targetRow = this.getTargetPosition();
         var targetCol = this.getTargetPosition();
+
+        show(targetRow + " , " + targetCol);
         // var target_Row = Math.floor(Math.random() * NUM_OF_SECTIONS);
         // var target_Col = Math.floor(Math.random() * NUM_OF_SECTIONS);
 
@@ -691,7 +696,7 @@ class Target{
         // var target_Col_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
 
         // if(g_targetCollisionCount == 1){
-            this.block = new Block(targetRow,targetCol,SNAKE_COLORS.TARGET);
+        this.block = new Block(targetRow,targetCol,SNAKE_COLORS.TARGET);
             // this.block = new Block(target_Row_Block2,target_Col_Block2,SNAKE_COLORS.TARGET);
         // }
         // else{
@@ -729,8 +734,10 @@ class Target{
         
         // var targetRow = Math.floor(Math.random() * NUM_OF_SECTIONS);
 
-
-        var targetPosition = Math.floor(Math.random() * NUM_OF_SECTIONS);
+        var sectionMargin = Math.floor((MARGIN/100) * NUM_OF_SECTIONS); // "/100"
+        var targetPosition = Math.floor(Math.random() * (NUM_OF_SECTIONS -(2*sectionMargin)) ) + sectionMargin;
+        
+        
     
         // var max = NUM_OF_SECTIONS - 1;
         // var min = 0+1;
@@ -739,14 +746,15 @@ class Target{
         // var targetPosition = Math.random() * (max - min) + min;
         // Math.round(targetPosition);
 
-        if(targetPosition == 1){
-            targetPosition = 2;
-        }
+        // if(targetPosition <= 1){
+        //     targetPosition = 2;
+        // }
         // if(targetPosition == NUM_OF_SECTIONS){
         //     targetPosition = targetPosition-1;
         // }
 
         // this.targetMargins(targetPosition);
+
         return targetPosition;
     }
     
@@ -1102,8 +1110,9 @@ function draw(){
     }
 
 
+    document.getElementById("stats").value = "Initial Stats";//g_targetCollisionCount;
     
-    // document.getElementById("score").value = g_targetCollisionCount;
+    // document.getElementById("score").value = "Initial Score";//g_targetCollisionCount;
 
     myTarget.paint();
 
