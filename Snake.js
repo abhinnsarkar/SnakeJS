@@ -24,7 +24,7 @@
 //December 15 : Made a margin for target to appear in , 
 
 //IDEAS//
-//--> ...Margins for target
+
 //--> ...Make snake come out opposite side when wall is hit
 //--> ...Textbox with scorecount and snake status
 //--> ...Sounds
@@ -74,12 +74,13 @@ const FRAME_SPEED = {  // this is an example of enumeration
 
 
 const INITIAL_SNAKE_DIRECTION = directions.RIGHT;
-const CANVAS_SIZE = 600;
-const FRAME_RATE = FRAME_SPEED.VERY_FAST;   // higher is faster
+const CANVAS_SIZE = 1000;
+const FRAME_RATE = FRAME_SPEED.FAST;   // higher is faster
 const NUM_OF_SECTIONS = 21;
-const BODY_SIZE=3;
+const BODY_SIZE=10;
 var g_targetCollisionCount  = 0;
 const MARGIN = 10; //enter the margin in precentage
+var snakeStatus = "fine";
 
 const CENTER_GRID = (NUM_OF_SECTIONS + 1)/2;
 // show(CENTER_GRID);
@@ -605,7 +606,8 @@ class Snake {
             if (this.eatingSelf()) {
 
                 this.setToHardStop();
-                show("SNAKE EATING SELF !! GAME OVER")
+                snakeStatus = "eating self !!! game over";
+                show("SNAKE EATING SELF !! GAME OVER");
             }
             else {
                 // if not reached the wall, then keep the snake moving, else stop
@@ -942,12 +944,27 @@ var myTarget = new Target();
 document.addEventListener("keydown",function(event) {
  
     onkeypressed(event);
+})
  
+
+
+function sound(src) {
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function(){
+        this.sound.play();
+    }
+    this.stop = function(){
+        this.sound.pause();
+    }    
 }
- 
- 
-)
- 
+
+mySound = new sound("sound.wav");
+
 // ------------------- END OF MAIN -------------------
  
 function setup(){
@@ -1004,7 +1021,8 @@ function createBackgroundWithGridLines() {
 function makeSnakeMove(snake) {
     snake.paint();
     snake.move();
-    
+    mySound.play();    
+    // mySound.stop();
     
 
 }
@@ -1040,8 +1058,12 @@ function increaseScoreCount() {
 
 function displayScore(){
 
-    document.getElementById("score").value = g_targetCollisionCount;
+    document.getElementById("score").value = "Score Count is " + g_targetCollisionCount;
 
+}
+
+function snakeStats(){
+    document.getElementById("stats").value = "Snake is " + snakeStatus;//g_targetCollisionCount;
 }
 
  
@@ -1091,6 +1113,8 @@ function draw(){
  
     // create the background with the grid lines
     createBackgroundWithGridLines();
+    displayScore();
+    snakeStats();
 
     //if the snakehead has reached the Target, 
     //   target will disappear and reappear somewhere else
@@ -1103,14 +1127,15 @@ function draw(){
         repositionTarget(myTarget);
         increaseScoreCount();
         growTheSnake(mySnake);
-        displayScore();
+        // displayScore();
     }
     else {
         // do nothing
     }
 
 
-    document.getElementById("stats").value = "Initial Stats";//g_targetCollisionCount;
+    // snakeStats();
+    // document.getElementById("stats").value = "Snake is " + snakeStatus;//g_targetCollisionCount;
     
     // document.getElementById("score").value = "Initial Score";//g_targetCollisionCount;
 
@@ -1121,3 +1146,6 @@ function draw(){
     makeSnakeMove(mySnake);
     
 }
+
+
+
