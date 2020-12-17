@@ -19,15 +19,18 @@
 //December 7 : Troubleshooting why the Snake breaks off in some situations
 
 //December 8 : Made snake stop when it eats itself
-// global variables go here //
 
-//December 15 : Made a margin for target to appear in , 
+//December 15 : Made a margin for target to appear in , made scorebox , made status box
+
+//December 16 : Added sounds --- chomp sound when target is hit 
+             // metronome for snake sound as moves 
+             // explosion for when snake is dead
+
+            //: Added Textbox for snake size
+            //: Added Textbox for game info
 
 //IDEAS//
-
 //--> ...Make snake come out opposite side when wall is hit
-//--> ...Textbox with scorecount and snake status
-//--> ...Sounds
 //--> ...Different shape for target
  
 // REMOVE THIS TESTER PRINT AFTER DEVELOPMENT IS COMPLETED
@@ -45,6 +48,7 @@ function show_always(msg) {
     console.log(msg);
 }
 
+//global constants / variables
 
 const directions = {  // this is an example of enumeration
  
@@ -52,6 +56,7 @@ const directions = {  // this is an example of enumeration
     LEFT:"left",
     UP:"up",
     DOWN:"down"
+
 }
  
 const SNAKE_COLORS = {
@@ -60,6 +65,7 @@ const SNAKE_COLORS = {
     BODY:100,
     TARGET:200,
     TAIL:50
+
 }
  
 const FRAME_SPEED = {  // this is an example of enumeration
@@ -69,47 +75,54 @@ const FRAME_SPEED = {  // this is an example of enumeration
     MEDIUM:5,
     FAST:7,
     VERY_FAST:10
+
 }
 
+const INITIAL_SNAKE_DIRECTION = directions.RIGHT ;
 
+const CANVAS_SIZE = 600 ;
 
-const INITIAL_SNAKE_DIRECTION = directions.RIGHT;
-const CANVAS_SIZE = 1000;
-const FRAME_RATE = FRAME_SPEED.FAST;   // higher is faster
-const NUM_OF_SECTIONS = 21;
-const BODY_SIZE=10;
-var g_targetCollisionCount  = 0;
-const MARGIN = 10; //enter the margin in precentage
-var snakeStatus = "fine";
+const FRAME_RATE = FRAME_SPEED.FAST ; // higher is faster
 
-const CENTER_GRID = (NUM_OF_SECTIONS + 1)/2;
-// show(CENTER_GRID);
- 
+const NUM_OF_SECTIONS = 21 ;
+
+const BODY_SIZE = 3 ; // controls the initial size of the snake
+const SNAKE_SIZE = BODY_SIZE + 1;
+
+var g_targetCollisionCount  = 0 ;
+
+const MARGIN = 10 ; //enter the margin in percentage
+
+ snakeStatus = "fine" ; // if everything is good, then status == fine else game over
+
+const CENTER_GRID = (NUM_OF_SECTIONS + 1)/2; // finds center of grid to show snake starts
 const g_initialX = CANVAS_SIZE/2;
 const g_initialY = CANVAS_SIZE/2;
-const g_blockSize = CANVAS_SIZE/NUM_OF_SECTIONS;
+
+const g_blockSize = CANVAS_SIZE/NUM_OF_SECTIONS; // makes a block size based on the canvas size and number of sections --- proportional --- will change as canvas size and number of sections changes
 const g_blockColor = 10;
 const g_headColor = 100;
- 
+
 const ARROW_DOWN = "ArrowDown";
 const ARROW_UP = "ArrowUp";
 const ARROW_RIGHT = "ArrowRight";
 const ARROW_LEFT = "ArrowLeft";
 const SPACE_KEY = " ";
- 
 
- 
- 
-const g_distance = 15;
- 
+var errorMessage = " ";
+
+const BLACK_BLOCK = "Black Block = head block";
+const WHITE_BLOCK = "White Block =  target";
+const LIGHT_GREY_BLOCK = "Light Grey Block =  body blocks";
+const DARK_GREY_BLOCK = "Dark Grey Block = tail block";
+
+
 //returns a position object with pixel values, given the row and col of the grid
 function gridToPixel(rowGrid,colGrid){
 
     var col = colGrid - 1;
     var row = rowGrid - 1;
     var positionObject = new Position(col*g_blockSize , row*g_blockSize);
-
-    // show(rowGrid,colGrid);
 
     return positionObject;
 
@@ -130,9 +143,12 @@ class Coordinate {
 class TurnFound {
 
     constructor(foundBoolean, directionsValue) {
+
         this.found = foundBoolean;
         this.newDir = directionsValue;
+
     }
+
 }
 
 class Block {
@@ -141,10 +157,9 @@ class Block {
     //behavior = move up,move down, move right,move left,start,stop,draw
  
     // creates a block, given the row number, col number, and colour
-    constructor(rowGrid, colGrid, color) {
+    constructor(rowGrid, colGrid, color, curve) {
  
         // using the passed parameters
-        // this.position = gridToPixel(rowGrid,colGrid);   
 
         this.row = rowGrid;
         this.col = colGrid;
@@ -152,38 +167,31 @@ class Block {
         // using the global constants
         this.blockSize =  g_blockSize;
         this.blockColor =  color;
-
-        // show("Color of the block is " + color);
-        
-        // show(this.row);
-        // show(this.col);
-
  
+        this.curve = curve;
     }
 
-    
     changeColor(color) {
+
         this.blockColor = color;
+
     }
+
     drawBlock(){
  
-        // show("entered drawBlock");
         noStroke();
         fill(this.blockColor);
         
         var position = gridToPixel(this.row,this.col);
-
-        // show(positionObject);
         
-        rect(position.x,position.y,this.blockSize,this.blockSize);
-
-        // show(position.x + " ,  " + position.y);
+        rect(position.x,position.y,this.blockSize,this.blockSize,this.curve);
 
     }
     
-    
     setDirection(direction) {
+
         this.direction = direction;
+    
     }
     
     //makes block move based on set/current direction
@@ -192,41 +200,31 @@ class Block {
         switch(this.direction){
 
             case directions.UP:
-                // this.position.y = this.position.y - g_blockSize;
-
-                // this.col = this.col - g_blockSize;
 
                 this.row = this.row -1;
 
                 break;
  
             case directions.DOWN:
-                // this.position.y = this.position.y + g_blockSize;
 
-                // this.col = this.col + g_blockSize;
                 this.row = this.row + 1;
 
                 break;
 
             case directions.LEFT:
-                // this.position.x = this.position.x - g_blockSize;
 
-                // this.row = this.row - g_blockSize;
                 this.col = this.col - 1;
-
 
                 break;
             
             case directions.RIGHT:
 
-                // this.position.x = this.position.x + g_blockSize;
-
-                // this.row = this.row + g_blockSize;
                 this.col = this.col + 1;
 
         }
         
     }
+
     //this gives the block a new position
     newPos(newRow,newCol){
 
@@ -241,7 +239,7 @@ class Block {
 class Snake {
  
     //attributes = blocks,length
-    //behavior = start,stop,eat,changedirection, grow [it will grow the size of the snake]
+    //behavior = start,stop,eat,change direction, grow [it will grow the size of the snake]
  
     constructor() {
  
@@ -252,15 +250,9 @@ class Snake {
         this.createHead();
         this.isMoving = true;
         this.hardStop = false;
-
-        //this.turningPoint = new Coordinate(0,0);
-
- 
-        
  
     }
  
-    //
     createInitialDirection(){
  
         this.turns = new Turnings();
@@ -269,17 +261,13 @@ class Snake {
     }
  
     createHead(){
+
         //this is the head block
-        // this.blocks.push(new Block(CENTER_GRID, CENTER_GRID,SNAKE_COLORS.HEAD));
-        var headBlock = new Block(CENTER_GRID, CENTER_GRID,SNAKE_COLORS.HEAD);
+        var headBlock = new Block(CENTER_GRID, CENTER_GRID,SNAKE_COLORS.HEAD,0);
         headBlock.setDirection(this.turns.getLatestDirection());
-        
         this.blocks.push(headBlock);
     
-    
     }
-
-
 
     // returns true, if the user is asking the Snake to turn in the opposite direction
     checkOppositeDirection(newDirection) {
@@ -288,20 +276,32 @@ class Snake {
 
         switch (newDirection) {
 
-
             case directions.RIGHT:
+
                 return (currentDirection == directions.LEFT);
+
                 break; 
+
             case directions.LEFT:
+
                 return (currentDirection == directions.RIGHT); 
+
                 break;
+
             case directions.UP:
+
                 return (currentDirection == directions.DOWN);
+
                 break;
+
             case directions.DOWN:
+
                 return (currentDirection == directions.UP);
+
                 break;
+
         }
+
     }
  
     // directional key has been found, we need to go
@@ -310,17 +310,16 @@ class Snake {
         this.setToStart();
 
         if (!(this.checkOppositeDirection(newDirection))) {
+
             this.setDirection(newDirection);
+
         }
+
     }
 
-    
     // when a new direction is provided, save the previous direction before setting the new direction
     setDirection(directionValue) {
  
-        // this.prevDirection = this.direction;  // save the current direction in the prev variable ; so RIGHT
-        // this.direction = directionValue; // this will now be UP
-
         let headOfSnake = this.getHead();
 
         var turningPointRow = headOfSnake.row;
@@ -330,29 +329,22 @@ class Snake {
 
         this.turns.createNewTurn(turningPoint,directionValue);
 
-        
-
-        // show("--------------------------------------------------------------------")
-        // show("New Dir " + this.turns.getLatestDirection() + " Prev Dir " + this.turns.getSecondFromLatestDirection());
-        // show("turn point " + this.turns.getLatestPosition().row + " " + this.turns.getLatestPosition().col);
-
     }
  
-    // this will grow the size of the snake by 1
+    // this will grow the size of the snake by 1 each time a target is hit
     grow() {
-
         
         // check which direction the snake is going in
         // if the snake is going to the right, the new block should be added to the left
  
-
         var newC;
         var newR;
 
         if (! (this.blocks.length == 1)) {
+
             this.getTail().changeColor(SNAKE_COLORS.BODY);
+
         }
-        
 
         var C = this.getTail().col;
         var R = this.getTail().row;
@@ -360,88 +352,83 @@ class Snake {
         switch (this.getTail().direction) {
  
             case directions.RIGHT:
-                // show("direction is right");
+
                 newC = C - 1;
                 newR = R;
+                
                 break;
     
             case directions.LEFT:
-                // show("direction is left");
+
                 newC = C + 1;
                 newR = R;
+                
                 break;
-                //
+                
             case directions.UP:
-                // show("direction is up");
+
                 newR = R + 1;
                 newC = C;
+
                 break;
-                //
+                
             case directions.DOWN:
-                // show("direction is down");
+
                 newR = R - 1;
                 newC = C;
+
                 break;
-                //
             
         }
 
         
-        var newBlock = new Block(newR,newC,SNAKE_COLORS.TAIL);
+        var newBlock = new Block(newR,newC,SNAKE_COLORS.TAIL,0);
+
         newBlock.setDirection(this.getTail().direction);
 
-        // show("new block created, pushing it now");
         this.blocks.push(newBlock);
 
-        // show("new block has been pushed");
- 
     }
     
     setToStart(){
+
         if (!(this.hardStop)) {
+
             this.isMoving = true;
+
         }
         
     }
  
     setToStop(){
+
         this.isMoving = false;
+
     }
 
     setToHardStop() {
+
         this.hardStop = true;
         this.setToStop();
+
     }
  
     stopStart(){
  
         this.isMoving = !(this.isMoving);
- 
-        // if(this.isMoving){
-        //     this.isMoving = false;
-        // }
-        // else{
-        //     this.isMoving = true;
-        // }
+
     }
  
-
     // returns true if the head block has reached the RIGHT wall
     reachedTheRightWall(headOfSnake){
- 
-        // let rightWall = CANVAS_SIZE;
-        // return (headOfSnake.position.x + g_blockSize >= rightWall);
-
-
+    
         return (headOfSnake.col == NUM_OF_SECTIONS);
+        
     }
 
     // returns true if the head block has reached the LEFT wall
     reachedTheLeftWall(headOfSnake){
  
-        // let leftWall = 0;
-        // return (headOfSnake.position.x /*- g_blockSize*/ <= leftWall);
-
         return (headOfSnake.col == 1);
 
     }
@@ -449,9 +436,6 @@ class Snake {
     // returns true if the head block has reached the BOTTOM wall
     reachedTheBottomWall(headOfSnake){
  
-        // let bottomWall = CANVAS_SIZE;
-        // return (headOfSnake.position.y + g_blockSize >= bottomWall);
-
         return (headOfSnake.row == NUM_OF_SECTIONS);
 
     }
@@ -459,58 +443,65 @@ class Snake {
     // returns true if the head block has reached the TOP wall
     reachedTheTopWall(headOfSnake){
  
-        // let topWall = 0;
-        // return (headOfSnake.position.y /*- g_blockSize*/ <= topWall);
-
         return (headOfSnake.row == 1);
 
     }
 
-
     getHead() {
 
         return (this.blocks[0]);
+
     }
 
     getTail() {
 
         let arrLength = this.blocks.length - 1
         return (this.blocks[arrLength]);
+
     }
 
     // returns true if the head block has reached a wall
     reachedTheWall() {
+
         let currentDirection = this.direction;
+
         let headOfSnake = this.getHead(); // this will give the head of the snake (first element of the array)
 
         switch (currentDirection) {
 
             case (directions.RIGHT):
+
                 return this.reachedTheRightWall(headOfSnake);
+        
                 break;
 
             case (directions.LEFT):
+
                 return this.reachedTheLeftWall(headOfSnake);
+
                 break;
 
             case (directions.UP):
+
                 return this.reachedTheTopWall(headOfSnake);
+
                 break;
 
             case (directions.DOWN):
-                return this.reachedTheBottomWall(headOfSnake);
-                break;
 
+                return this.reachedTheBottomWall(headOfSnake);
+
+                break;
 
         }
 
     }
 
-
     //checks if the snake head has hit its own body
     eatingSelf(){
 
         var snakehead = this.getHead();
+
         var eatingSnake = false;
 
         for( var i = 1; i < this.blocks.length ; i++){
@@ -519,15 +510,11 @@ class Snake {
             
                 eatingSnake = true;
 
-
             }
-
-            // return(snakehead.row == this.blocks[i].row && snakehead.col == this.blocks[i].col);
 
         }
 
         return eatingSnake;
-
 
     }
 
@@ -535,19 +522,22 @@ class Snake {
     // it returns a false
     bodyHasReachedTurningPoint(bodyBlock) {
 
-
         // given the bodyBlock, check against each Turn in the Turns objects
         // keep checking until you find a match, and return a true if match found
         // if all turns have been checked, and match has not been found, then return a false
 
         var found = false;
+
         var newDirection;
 
         for(var i = 0; ((i < this.turns.turnPos.length) && (!found)) ; i++){
 
             if((bodyBlock.row == this.turns.turnPos[i].row) && (bodyBlock.col == this.turns.turnPos[i].col)){
+
                 found = true;
+
                 newDirection = this.turns.turnDir[i];
+
             }
 
         }
@@ -556,11 +546,7 @@ class Snake {
         
         return (returnObj);
 
-
-        // return ((bodyBlock.row == this.turns.getLatestPosition().row) && (bodyBlock.col == this.turns.getLatestPosition().col));
-
     }
-
 
     trap() {
 
@@ -573,23 +559,29 @@ class Snake {
         let br = firstBody.row;
         let bc = firstBody.col;
 
-
-
         var fine = false;
+
         if (br == hr) {
+
             if ((bc == hc + 1) || (bc == hc - 1)) {
+
                 fine = true;
+
             }
+
         }
+
         else if (bc == hc) {
+
             if ((br == hr + 1) || (br == hr - 1)) {
+
                 fine = true;
+
             }
+
         }
 
         return (fine);
-        
-
 
     }
 
@@ -598,120 +590,99 @@ class Snake {
 
          if(this.isMoving){
 
-            // if(!(this.eatingSelf())){
+            if (this.eatingSelf() || this.reachedTheWall()) {
 
-            // }
-
-
-            if (this.eatingSelf()) {
+                deathSound.play();
 
                 this.setToHardStop();
-                snakeStatus = "eating self !!! game over";
-                show("SNAKE EATING SELF !! GAME OVER");
+
+                snakeStatus = "eating self";
+                errorMessage = "GAME OVER!!!";
+
             }
+
             else {
+
                 // if not reached the wall, then keep the snake moving, else stop
-                if (!(this.reachedTheWall()))
+                if (!(this.reachedTheWall())){
 
-                // invoke the move function of each block of the snake
+                    snakeSound.play();
 
-                // headBlock needs to go in New Direction, whereas Body will go in Previous Direction
+                    // invoke the move function of each block of the snake
 
-                var headBlock = this.getHead();
-                headBlock.setDirection(this.turns.getLatestDirection());
-                headBlock.moveBlock();
+                    // headBlock needs to go in New Direction, whereas Body will go in Previous Direction
 
-                //repeat this for the body of the snake (except for the tail)
-                for(var i=1; i < this.blocks.length - 1;i++){    // -1 so that we can exclude the tail
-        
-                    var bodyBlock = this.blocks[i];
-                    // if body has reached the turning point, it should be pointed in new direction
-                    // otherwise it can keep going in previous direction
+                    var headBlock = this.getHead();
+                    headBlock.setDirection(this.turns.getLatestDirection());
+                    headBlock.moveBlock();
 
-                    var turnFound = this.bodyHasReachedTurningPoint(bodyBlock);
+                    //repeat this for the body of the snake (except for the tail)
+                    for(var i=1; i < this.blocks.length - 1;i++){    // -1 so that we can exclude the tail
+            
+                        var bodyBlock = this.blocks[i];
+                        // if body has reached the turning point, it should be pointed in new direction
+                        // otherwise it can keep going in previous direction
+
+                        var turnFound = this.bodyHasReachedTurningPoint(bodyBlock);
+
+                        if (turnFound.found) {
+
+                            bodyBlock.setDirection(turnFound.newDir);
+                        
+                        }
+                        
+                        bodyBlock.moveBlock();     
+
+                    }
+
+                    var tailBlock = this.getTail();
+
+                    var turnFound = this.bodyHasReachedTurningPoint(tailBlock);
 
                     if (turnFound.found) {
-                        // show("... reached turn, go " + turnFound.newDir);
-                        bodyBlock.setDirection(turnFound.newDir);
-                    
+                        
+                        tailBlock.setDirection(turnFound.newDir);
+                        
+                        this.turns.removeOldestTurn();
+
                     }
-                    
-                    bodyBlock.moveBlock();      
-                }
 
-                var tailBlock = this.getTail();
+                    tailBlock.moveBlock();
 
-                // var turnFound = this.bodyHasReachedTurningPoint(tailBlock);
-                var turnFound = this.bodyHasReachedTurningPoint(tailBlock);
-                if (turnFound.found) {
+                    }
 
-                    // show("entered if");
-                    tailBlock.setDirection(turnFound.newDir);
-                    this.turns.removeOldestTurn();
-
-                    
-                }
-
-                tailBlock.moveBlock();
             }
+
         }  
+
     }
  
     // paints all the blocks within this snake
     paint() {
  
         for(var i=0; i < this.blocks.length; i++){
+
             this.blocks[i].drawBlock();
+
         }
  
     }
     
 
 }
-// g_targetColAndRowLimit = NUM_OF_SECTIONS - 1;
-// var target_Row_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
-// var target_Col_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
 
- 
 class Target{
  
 //attributes = block
 //behavior = draw,eaten
  
     constructor(){
-
-        // this.block = new Block(16,16,SNAKE_COLORS.TARGET);
-        // this.block.drawBlock();
-
-        //
-        
-        // this.getTargetPosition();
-        
+    
         var targetRow = this.getTargetPosition();
         var targetCol = this.getTargetPosition();
-
-        show(targetRow + " , " + targetCol);
-        // var target_Row = Math.floor(Math.random() * NUM_OF_SECTIONS);
-        // var target_Col = Math.floor(Math.random() * NUM_OF_SECTIONS);
-
-        // var target_Row_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
-        // var target_Col_Block2 = Math.floor(Math.random() * g_targetColAndRowLimit);
-
-        // if(g_targetCollisionCount == 1){
-        this.block = new Block(targetRow,targetCol,SNAKE_COLORS.TARGET);
-            // this.block = new Block(target_Row_Block2,target_Col_Block2,SNAKE_COLORS.TARGET);
-        // }
-        // else{
-        //     this.block = new Block(target_Row_Block2,target_Col_Block2,SNAKE_COLORS.TARGET);
-        // }
         
-
+        this.block = new Block(targetRow,targetCol,SNAKE_COLORS.TARGET,20);
         
-        
-
-        // show(target_Row);
-        // show(target_Col);
-
     }
 
     //draws the target
@@ -721,45 +692,16 @@ class Target{
 
     }
 
-    // targetMargins(targetPos){
-    //     if(targetPos == 1){
-    //         targetPos = 2;
-    //     }
-    //     if(targetPos == NUM_OF_SECTIONS){
-    //         targetPos = targetPos-2;
-    //     }
-
-    // }
-
-    //gets a random position for the target between 1 and the number of sections
+    //gets a random position for the target between the first margin and second margin
     getTargetPosition(){
         
-        // var targetRow = Math.floor(Math.random() * NUM_OF_SECTIONS);
-
         var sectionMargin = Math.floor((MARGIN/100) * NUM_OF_SECTIONS); // "/100"
+
         var targetPosition = Math.floor(Math.random() * (NUM_OF_SECTIONS -(2*sectionMargin)) ) + sectionMargin;
         
-        
-    
-        // var max = NUM_OF_SECTIONS - 1;
-        // var min = 0+1;
-    
-
-        // var targetPosition = Math.random() * (max - min) + min;
-        // Math.round(targetPosition);
-
-        // if(targetPosition <= 1){
-        //     targetPosition = 2;
-        // }
-        // if(targetPosition == NUM_OF_SECTIONS){
-        //     targetPosition = targetPosition-1;
-        // }
-
-        // this.targetMargins(targetPosition);
-
         return targetPosition;
+
     }
-    
     
     // this will take the the target and repsoition it
     // we will get a neww random target position
@@ -769,59 +711,13 @@ class Target{
         var newRow = this.getTargetPosition();
         var newCol = this.getTargetPosition();
 
-        // this.block = new Block(newRow,newCol,SNAKE_COLORS.TARGET);
-
         this.block.newPos(newRow,newCol);
 
-
     }
 
 }
-
-
-//returns true if snake head has reached target else false
-
-function reachedTarget(){
-
-    // if(g_targetCollisionCount == 0){
-  
-        if(myTarget.block.row == mySnake.getHead().row && myTarget.block.col == mySnake.getHead().col){
-
-            // show("COLLISION HAS OCCURED!!!")
-            
-            // g_targetCollisionCount++;
-
-            // show("Collsion Count = " + g_targetCollisionCount);
-            // showCollisonCount();
-
-            return true;
-
-
-
-        }
-        else{
-
-            // myTarget.paint();
-
-            return false;
-
-
-        }
-
-    
-    }
-
-
-function showCollisonCount(){
-    show("Collsion Count = " + g_targetCollisionCount);
-}
  
-class Canvas{
- 
-    //attributes = size,color,shape,position
-    //behavior = draw
- 
-}
+class Canvas{}
  
 class Position{
  
@@ -831,11 +727,11 @@ class Position{
  
         this.x = x;
         this.y = y;
+
     }
  
 }
  
-
 class Turnings{
 
     constructor(){
@@ -845,24 +741,22 @@ class Turnings{
 
     }
     
+    // //this method will print out the values of the properties
+    // printYourself() {
 
-    
-    //this method will print out the values of the properties
-    printYourself() {
+    //     show("-------- printing the turns -----------")
 
-        show("-------- printing the turns -----------")
+    //     for (var i =0; i < this.turnPos.length; i++){
 
-        for (var i =0; i < this.turnPos.length; i++){
-
-            show ("Turn >> " + this.turnPos[i].row + "," + this.turnPos[i].col + " >> " + this.turnDir[i]);
+    //         show ("Turn >> " + this.turnPos[i].row + "," + this.turnPos[i].col + " >> " + this.turnDir[i]);
             
-        }
+    //     }
 
-    }
+    // }
+
     //adding position of turn and direction turn in to arrays
     createNewTurn(coordObj,dir){
 
-        // this.blocks.push(new Block(CENTER_GRID, CENTER_GRID,SNAKE_COLORS.HEAD));
         this.turnPos.push(coordObj);
         this.turnDir.push(dir);
 
@@ -876,7 +770,6 @@ class Turnings{
 
     }
 
-
     // gets the latest value from the direction queue
     getLatestDirection(){
 
@@ -884,7 +777,6 @@ class Turnings{
 
     }
 
-    
     // gets the latest value from the position queue
     getLatestPosition(){
 
@@ -899,7 +791,6 @@ class Turnings{
 
     }
 
-    
     // gets the second latest value from the position queue
     getSecondFromLatestPosition(){
 
@@ -907,79 +798,80 @@ class Turnings{
 
     }
 
-
     print(){
 
         for (var i=0;i<this.turnPos.length;i++){
+
             show(i + "-->" + this.turnPos[i] + "-->" + this.turnDir[i]);
             
         }
+
     }
-
-
 
 }
 
+//returns true if snake head has reached target else false
+function reachedTarget(){
+  
+    if(myTarget.block.row == mySnake.getHead().row && myTarget.block.col == mySnake.getHead().col){
 
-// ------------------- MAIN FUNCTIONALITY -------------------
-// ------------------- MAIN FUNCTIONALITY -------------------
-// ------------------- MAIN FUNCTIONALITY -------------------
-// ------------------- MAIN FUNCTIONALITY -------------------
-// ------------------- MAIN FUNCTIONALITY -------------------
-// ------------------- MAIN FUNCTIONALITY -------------------
-// ------------------- MAIN FUNCTIONALITY -------------------
-// ------------------- MAIN FUNCTIONALITY -------------------
-// ------------------- MAIN FUNCTIONALITY -------------------
-// ------------------- MAIN FUNCTIONALITY -------------------
-// ------------------- MAIN FUNCTIONALITY -------------------
-// ------------------- MAIN FUNCTIONALITY -------------------
+        return true;
 
+    }
+    
+    else{
 
-// Add Global Functionality here 
- 
-var mySnake = new Snake();
-var myTarget = new Target();
+        return false;
 
- 
+    }
+
+}
+
+//////////////////// MAIN FUNCTIONALITY /////////////////////
+//////////////////// MAIN FUNCTIONALITY /////////////////////
+//////////////////// MAIN FUNCTIONALITY /////////////////////
+//////////////////// MAIN FUNCTIONALITY /////////////////////
+//////////////////// MAIN FUNCTIONALITY /////////////////////
+
+//helps figure out which key has been pressed
 document.addEventListener("keydown",function(event) {
  
     onkeypressed(event);
+
 })
- 
 
+//////////////////////// END OF MAIN ////////////////////////
 
+//provides ability to incoroporate sounds into game
 function sound(src) {
+
     this.sound = document.createElement("audio");
+
     this.sound.src = src;
+
     this.sound.setAttribute("preload", "auto");
+
     this.sound.setAttribute("controls", "none");
+
     this.sound.style.display = "none";
+
     document.body.appendChild(this.sound);
+
     this.play = function(){
+
         this.sound.play();
+
     }
+
     this.stop = function(){
+
         this.sound.pause();
+
     }    
-}
-
-mySound = new sound("sound.wav");
-
-// ------------------- END OF MAIN -------------------
- 
-function setup(){
- 
-    createCanvas(CANVAS_SIZE,CANVAS_SIZE);
-    frameRate(FRAME_RATE);
-    
-
-    intialSnakeGrow(mySnake);
-
-
 
 }
-
-
+ 
+//sets the color for the lines on the grid (divideCanvas)
 function setGridLineColour(){
 
     let THIN = 1;
@@ -987,20 +879,17 @@ function setGridLineColour(){
     
     let GREY_COLOR = 10;
     stroke(GREY_COLOR);
+
 }
     
+//divides canvas and draws rows and columns
 function divideCanvas(){
-    
-    // console.log("Dividing the canvas");
+
     setGridLineColour();
-    // var numberOfLines = 10;
-    // var space = CANVAS_SIZE / numberOfLines;
-    
+
     for(var i = 0; i<NUM_OF_SECTIONS; i++){
 
         var drawLines = i*g_blockSize;
-
-        // console.log("Drawing a line");
 
         line(drawLines, 0, drawLines, CANVAS_SIZE);
         line(0, drawLines, CANVAS_SIZE, drawLines);
@@ -1016,105 +905,156 @@ function createBackgroundWithGridLines() {
 
 }
 
-
 // given a snake, this will paint it and ask it to move
 function makeSnakeMove(snake) {
+    
     snake.paint();
     snake.move();
-    mySound.play();    
-    // mySound.stop();
     
-
 }
 
-
+//given a size, sets number of body blocks to given size
 function intialSnakeGrow(snake) {
 
     for (var i = 0; i < BODY_SIZE; i++) {
-        growTheSnake(snake);
-    }
-}
 
+        growTheSnake(snake);
+
+    }
+
+}
 
 // given a snake, this will grow it
 function growTheSnake(snake) {
-    // show("enetered growTheSnake");
+
     snake.grow();
     
 }
 
-
 // given a Target, reposition it
 function repositionTarget(target) {
+
     target.reposition();
 
 }
 
+//increments score count
 function increaseScoreCount() {
-    //todo : rename this to a more appropriate variable name
+
     g_targetCollisionCount++;
-    show( "Score Count = " + g_targetCollisionCount);
+
 }
 
+//display the score count in a textbox
 function displayScore(){
 
-    document.getElementById("score").value = "Score Count is " + g_targetCollisionCount;
+    document.getElementById("scoreCount").value = "Score Count = " + g_targetCollisionCount;
 
 }
 
+//display the stats of the snake in a textbox
 function snakeStats(){
-    document.getElementById("stats").value = "Snake is " + snakeStatus;//g_targetCollisionCount;
+    
+    document.getElementById("snakeStatus").value = "Snake is " + snakeStatus;
+
 }
 
- 
+//displays "GAME OVER!!!" whenever something goes wrong
+function displayErrorMessage(){
+
+    document.getElementById("errorMessage").value = errorMessage;
+
+}
+
+//displays the size of the snake
+function displaySnakeSize(){
+
+    document.getElementById("snakeSize").value = "Snake is " + SNAKE_SIZE + " blocks big";
+
+}
+
+//displays basic game info
+function displayGameInfo(){
+
+    document.getElementById("black").value = BLACK_BLOCK ;
+    document.getElementById("white").value = WHITE_BLOCK ;
+    document.getElementById("lightgrey").value = LIGHT_GREY_BLOCK ;
+    document.getElementById("darkgrey").value = DARK_GREY_BLOCK ;
+
+}
+
 // keyboard event 
 function onkeypressed(event) {
- 
-    // show(">>>" + event.key + "<<<");
- 
- 
  
     switch (event.key) {
  
         case ARROW_DOWN:
+
             mySnake.go(directions.DOWN);
+            
             break;
  
         case ARROW_UP:
+
             mySnake.go(directions.UP);
+
             break;
  
         case ARROW_LEFT:
+
             mySnake.go(directions.LEFT);
+
             break;
  
         case ARROW_RIGHT:
+
             mySnake.go(directions.RIGHT);
+            
             break;
         
         case SPACE_KEY:
+
             mySnake.setToStop();
  
     }
  
 }
-// show(mySnake.getHead().row);
 
+/////////////////////////////////// DRAW ///////////////////////////////////
+/////////////////////////////////// DRAW ///////////////////////////////////
+/////////////////////////////////// DRAW ///////////////////////////////////
+/////////////////////////////////// DRAW ///////////////////////////////////
+/////////////////////////////////// DRAW ///////////////////////////////////
 
-//************************************************************************//
-//*                                                                      *//
-//*                                                                      *//
-//*              javascript runs this function in a loop                 *//
-//*                                                                      *//
-//*                                                                      *//
-//************************************************************************//
+function setup(){
+ 
+    createCanvas(CANVAS_SIZE,CANVAS_SIZE);
+
+    frameRate(FRAME_RATE);
+
+    intialSnakeGrow(mySnake);
+
+}
+
 function draw(){
-    
  
     // create the background with the grid lines
     createBackgroundWithGridLines();
+
+    //display the score count in a textbox
     displayScore();
+
+    //display the stats of the snake in a textbox
     snakeStats();
+
+    //displays "GAME OVER!!!" whenever something goes wrong
+    displayErrorMessage();
+
+    //displays the size of the snake
+    displaySnakeSize();
+
+    //displays basic game info
+    displayGameInfo();
 
     //if the snakehead has reached the Target, 
     //   target will disappear and reappear somewhere else
@@ -1124,28 +1064,43 @@ function draw(){
     //   do nothing 
 
     if (reachedTarget()) {
+
+        eatingTargetSound.play();
+
         repositionTarget(myTarget);
+
         increaseScoreCount();
+
         growTheSnake(mySnake);
-        // displayScore();
+
     }
     else {
+
         // do nothing
+
+
     }
-
-
-    // snakeStats();
-    // document.getElementById("stats").value = "Snake is " + snakeStatus;//g_targetCollisionCount;
-    
-    // document.getElementById("score").value = "Initial Score";//g_targetCollisionCount;
-
     myTarget.paint();
 
-    // mySnake.grow();
     // make the snake move
     makeSnakeMove(mySnake);
     
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////OBJECTS//////////////////////////////////////////////////////
+//////////////////////////////////////////////OBJECTS//////////////////////////////////////////////////////
+//////////////////////////////////////////////OBJECTS//////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+var mySnake = new Snake();
+var myTarget = new Target();
+
+eatingTargetSound = new sound("eatingTargetSound.wav");
+snakeSound = new sound("snakeSound.wav");
+deathSound = new sound("deathSound.wav");
 
 
 
