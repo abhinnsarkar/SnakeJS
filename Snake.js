@@ -31,24 +31,32 @@
 
 //IDEAS//
 //--> ...Make snake come out opposite side when wall is hit
-//--> ...Different shape for target
  
 // REMOVE THIS TESTER PRINT AFTER DEVELOPMENT IS COMPLETED
 // const SHOW_ON = true;
 const SHOW_ON = true;
+
 function show(msg) {
  
     if (SHOW_ON) {
+
         console.log(msg);
  
     }
 }
  
 function show_always(msg) {
+    
     console.log(msg);
+
 }
 
-//global constants / variables
+//////////////////////// GLOBAL VARIABLES ////////////////////////
+//////////////////////// GLOBAL VARIABLES ////////////////////////
+//////////////////////// GLOBAL VARIABLES ////////////////////////
+//////////////////////// GLOBAL VARIABLES ////////////////////////
+//////////////////////// GLOBAL VARIABLES ////////////////////////
+//////////////////////// GLOBAL VARIABLES ////////////////////////
 
 const directions = {  // this is an example of enumeration
  
@@ -78,22 +86,34 @@ const FRAME_SPEED = {  // this is an example of enumeration
 
 }
 
+const FRAME_RATE = FRAME_SPEED.FAST ; // higher is faster
+
+
+const MODE = {
+
+    VERY_EASY : FRAME_SPEED.VERY_SLOW,
+    EASY : FRAME_SPEED.EASY,
+    NORMAL : FRAME_SPEED.MEDIUM,
+    HARD : FRAME_SPEED.FAST,
+    VERY_HARD : FRAME_SPEED.VERY_FAST
+
+}
+
 const INITIAL_SNAKE_DIRECTION = directions.RIGHT ;
 
 const CANVAS_SIZE = 600 ;
 
-const FRAME_RATE = FRAME_SPEED.FAST ; // higher is faster
-
 const NUM_OF_SECTIONS = 21 ;
-
-const BODY_SIZE = 3 ; // controls the initial size of the snake
-const SNAKE_SIZE = BODY_SIZE + 1;
 
 var g_targetCollisionCount  = 0 ;
 
+const BODY_SIZE = 4 ; // controls the initial size of the snake
+// var SNAKE_SIZE = g_targetCollisionCount + 2;
+
 const MARGIN = 10 ; //enter the margin in percentage
 
- snakeStatus = "fine" ; // if everything is good, then status == fine else game over
+var snakeStatus = "fine" ; // if everything is good, then status == fine else game over
+var errorMessage = " "; // if there is an error, such as dying , print GAME OVER
 
 const CENTER_GRID = (NUM_OF_SECTIONS + 1)/2; // finds center of grid to show snake starts
 const g_initialX = CANVAS_SIZE/2;
@@ -109,13 +129,8 @@ const ARROW_RIGHT = "ArrowRight";
 const ARROW_LEFT = "ArrowLeft";
 const SPACE_KEY = " ";
 
-var errorMessage = " ";
-
-const BLACK_BLOCK = "Black Block = head block";
-const WHITE_BLOCK = "White Block =  target";
-const LIGHT_GREY_BLOCK = "Light Grey Block =  body blocks";
-const DARK_GREY_BLOCK = "Dark Grey Block = tail block";
-
+var snakeBlockCurve = 5;
+var targetCurve = 20;
 
 //returns a position object with pixel values, given the row and col of the grid
 function gridToPixel(rowGrid,colGrid){
@@ -263,7 +278,7 @@ class Snake {
     createHead(){
 
         //this is the head block
-        var headBlock = new Block(CENTER_GRID, CENTER_GRID,SNAKE_COLORS.HEAD,0);
+        var headBlock = new Block(CENTER_GRID, CENTER_GRID,SNAKE_COLORS.HEAD,snakeBlockCurve);
         headBlock.setDirection(this.turns.getLatestDirection());
         this.blocks.push(headBlock);
     
@@ -382,7 +397,7 @@ class Snake {
         }
 
         
-        var newBlock = new Block(newR,newC,SNAKE_COLORS.TAIL,0);
+        var newBlock = new Block(newR,newC,SNAKE_COLORS.TAIL,snakeBlockCurve);
 
         newBlock.setDirection(this.getTail().direction);
 
@@ -590,6 +605,8 @@ class Snake {
 
          if(this.isMoving){
 
+            snakeSound.play();
+
             if (this.eatingSelf() || this.reachedTheWall()) {
 
                 deathSound.play();
@@ -605,8 +622,6 @@ class Snake {
 
                 // if not reached the wall, then keep the snake moving, else stop
                 if (!(this.reachedTheWall())){
-
-                    snakeSound.play();
 
                     // invoke the move function of each block of the snake
 
@@ -681,7 +696,7 @@ class Target{
         var targetRow = this.getTargetPosition();
         var targetCol = this.getTargetPosition();
         
-        this.block = new Block(targetRow,targetCol,SNAKE_COLORS.TARGET,20);
+        this.block = new Block(targetRow,targetCol,SNAKE_COLORS.TARGET,targetCurve);
         
     }
 
@@ -969,17 +984,77 @@ function displayErrorMessage(){
 //displays the size of the snake
 function displaySnakeSize(){
 
-    document.getElementById("snakeSize").value = "Snake is " + SNAKE_SIZE + " blocks big";
+    var SNAKE_SIZE = g_targetCollisionCount + BODY_SIZE + 1;
+    document.getElementById("snakeSize").value = "Snake is " + SNAKE_SIZE + " blocks";
 
 }
 
-//displays basic game info
-function displayGameInfo(){
+//determines and displays which mode the game is in
+function mode(){
 
-    document.getElementById("black").value = BLACK_BLOCK ;
-    document.getElementById("white").value = WHITE_BLOCK ;
-    document.getElementById("lightgrey").value = LIGHT_GREY_BLOCK ;
-    document.getElementById("darkgrey").value = DARK_GREY_BLOCK ;
+    if(FRAME_RATE == FRAME_SPEED.VERY_SLOW){
+
+        return "Mode = Very Easy";
+
+    }
+
+    if(FRAME_RATE == FRAME_SPEED.SLOW){
+
+        return "Mode = Easy";
+
+    }
+    
+    if(FRAME_RATE == FRAME_SPEED.MEDIUM){
+
+        return "Mode = Normal";
+
+    }
+
+    if(FRAME_RATE == FRAME_SPEED.FAST){
+
+        return "Mode = HARD";
+
+    }
+
+    if(FRAME_RATE == FRAME_SPEED.VERY_FAST){
+
+        return " Mode = VERY HARD";
+
+    }
+
+}
+
+function displayMode(){
+
+    document.getElementById("mode").value = mode();
+
+}
+
+//if the snakehead has reached the Target, 
+//   target will disappear and reappear somewhere else
+//   increase the score count
+//   grow the snake
+//   else (snake head has not reached the target)
+//   do nothing 
+function ifReachedTarget(){
+
+    if (reachedTarget()) {
+
+        eatingTargetSound.play();
+
+        repositionTarget(myTarget);
+
+        increaseScoreCount();
+
+        growTheSnake(mySnake);
+
+    }
+    else {
+
+        // do nothing
+
+
+    }
 
 }
 
@@ -1020,12 +1095,6 @@ function onkeypressed(event) {
  
 }
 
-/////////////////////////////////// DRAW ///////////////////////////////////
-/////////////////////////////////// DRAW ///////////////////////////////////
-/////////////////////////////////// DRAW ///////////////////////////////////
-/////////////////////////////////// DRAW ///////////////////////////////////
-/////////////////////////////////// DRAW ///////////////////////////////////
-
 function setup(){
  
     createCanvas(CANVAS_SIZE,CANVAS_SIZE);
@@ -1036,7 +1105,15 @@ function setup(){
 
 }
 
+/////////////////////////////////// DRAW ///////////////////////////////////
+/////////////////////////////////// DRAW ///////////////////////////////////
+/////////////////////////////////// DRAW ///////////////////////////////////
+/////////////////////////////////// DRAW ///////////////////////////////////
+/////////////////////////////////// DRAW ///////////////////////////////////
+
 function draw(){
+
+    gameSoundtrack.play();
  
     // create the background with the grid lines
     createBackgroundWithGridLines();
@@ -1053,33 +1130,17 @@ function draw(){
     //displays the size of the snake
     displaySnakeSize();
 
-    //displays basic game info
-    displayGameInfo();
+    //displays what difficulty/speed mode/level the game is at
+    displayMode();
 
     //if the snakehead has reached the Target, 
     //   target will disappear and reappear somewhere else
     //   increase the score count
     //   grow the snake
-    //else (snake head has not reached the target)
+    //   else (snake head has not reached the target)
     //   do nothing 
+    ifReachedTarget();
 
-    if (reachedTarget()) {
-
-        eatingTargetSound.play();
-
-        repositionTarget(myTarget);
-
-        increaseScoreCount();
-
-        growTheSnake(mySnake);
-
-    }
-    else {
-
-        // do nothing
-
-
-    }
     myTarget.paint();
 
     // make the snake move
@@ -1101,6 +1162,7 @@ var myTarget = new Target();
 eatingTargetSound = new sound("eatingTargetSound.wav");
 snakeSound = new sound("snakeSound.wav");
 deathSound = new sound("deathSound.wav");
+gameSoundtrack = new sound("gameSoundTrack.wav");
 
 
 
