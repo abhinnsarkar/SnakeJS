@@ -82,11 +82,11 @@ const FRAME_SPEED = {  // this is an example of enumeration
     SLOW:3,
     MEDIUM:5,
     FAST:7,
-    VERY_FAST:10
+    VERY_FAST:20
 
 }
 
-const FRAME_RATE = FRAME_SPEED.FAST ; // higher is faster
+const FRAME_RATE = FRAME_SPEED.VERY_SLOW ; // higher is faster
 
 
 const MODE = {
@@ -521,9 +521,12 @@ class Snake {
 
         for( var i = 1; i < this.blocks.length ; i++){
 
-            if(snakehead.row == this.blocks[i].row && snakehead.col == this.blocks[i].col){
+            if((snakehead.row == this.blocks[i].row) && (snakehead.col == this.blocks[i].col)){
             
                 eatingSnake = true;
+                show("SNAKE HEAD >> " + snakehead.row + " , " + snakehead.col);
+
+                show("BODY >> " + i + " >> " + this.blocks[i].row + " , " + this.blocks[i].col);
 
             }
 
@@ -607,7 +610,7 @@ class Snake {
 
             snakeSound.play();
 
-            if (this.eatingSelf() || this.reachedTheWall()) {
+            if (this.eatingSelf() /*|| this.reachedTheWall()*/) {
 
                 deathSound.play();
 
@@ -922,9 +925,14 @@ function createBackgroundWithGridLines() {
 
 // given a snake, this will paint it and ask it to move
 function makeSnakeMove(snake) {
+    // setTimeout(function() {},10000);
+    var delayInMilliseconds = 10000; //1 second
+
+    // setTimeout(function() {
+        snake.paint();
+        snake.move();
+    // }, delayInMilliseconds);
     
-    snake.paint();
-    snake.move();
     
 }
 
@@ -1094,59 +1102,74 @@ function onkeypressed(event) {
     }
  
 }
-
+  
 function setup(){
  
-    createCanvas(CANVAS_SIZE,CANVAS_SIZE);
+//    createCanvas(CANVAS_SIZE,CANVAS_SIZE);
 
     frameRate(FRAME_RATE);
 
-    intialSnakeGrow(mySnake);
-
-}
-
-/////////////////////////////////// DRAW ///////////////////////////////////
-/////////////////////////////////// DRAW ///////////////////////////////////
-/////////////////////////////////// DRAW ///////////////////////////////////
-/////////////////////////////////// DRAW ///////////////////////////////////
-/////////////////////////////////// DRAW ///////////////////////////////////
-
-function draw(){
-
-    gameSoundtrack.play();
- 
-    // create the background with the grid lines
-    createBackgroundWithGridLines();
-
-    //display the score count in a textbox
-    displayScore();
-
-    //display the stats of the snake in a textbox
-    snakeStats();
-
-    //displays "GAME OVER!!!" whenever something goes wrong
-    displayErrorMessage();
-
-    //displays the size of the snake
-    displaySnakeSize();
-
-    //displays what difficulty/speed mode/level the game is at
-    displayMode();
-
-    //if the snakehead has reached the Target, 
-    //   target will disappear and reappear somewhere else
-    //   increase the score count
-    //   grow the snake
-    //   else (snake head has not reached the target)
-    //   do nothing 
-    ifReachedTarget();
-
-    myTarget.paint();
-
-    // make the snake move
-    makeSnakeMove(mySnake);
+//    intialSnakeGrow(mySnake);
     
+   
 }
+
+/////////////////////////////////// DRAW ///////////////////////////////////
+/////////////////////////////////// DRAW ///////////////////////////////////
+/////////////////////////////////// DRAW ///////////////////////////////////
+/////////////////////////////////// DRAW ///////////////////////////////////
+/////////////////////////////////// DRAW ///////////////////////////////////
+
+function draw() {
+
+    
+    setTimeout(function() {
+        show(Date.now());
+
+    },10000);
+
+}
+
+
+// function draw(){
+
+//     gameSoundtrack.play();
+    
+
+    
+ 
+//     // create the background with the grid lines
+//     createBackgroundWithGridLines();
+
+//     //display the score count in a textbox
+//     displayScore();
+
+//     //display the stats of the snake in a textbox
+//     snakeStats();
+
+//     //displays "GAME OVER!!!" whenever something goes wrong
+//     displayErrorMessage();
+
+//     //displays the size of the snake
+//     displaySnakeSize();
+
+//     //displays what difficulty/speed mode/level the game is at
+//     displayMode();
+
+//     //if the snakehead has reached the Target, 
+//     //   target will disappear and reappear somewhere else
+//     //   increase the score count
+//     //   grow the snake
+//     //   else (snake head has not reached the target)
+//     //   do nothing 
+//     ifReachedTarget();
+
+//     myTarget.paint();
+
+//     // make the snake move
+//     makeSnakeMove(mySnake);
+    
+// }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
