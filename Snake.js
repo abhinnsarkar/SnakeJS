@@ -29,6 +29,8 @@
             //: Added Textbox for snake size
             //: Added Textbox for game info
 
+//December 30 : Centered canvas, textboxes, and title
+
 //IDEAS//
 //--> ...Make snake come out opposite side when wall is hit
  
@@ -86,7 +88,7 @@ const FRAME_SPEED = {  // this is an example of enumeration
 
 }
 
-const FRAME_RATE = FRAME_SPEED.VERY_SLOW ; // higher is faster
+const FRAME_RATE = FRAME_SPEED.FAST ; // higher is faster
 
 
 const MODE = {
@@ -105,23 +107,22 @@ const CANVAS_SIZE = 600 ;
 
 const NUM_OF_SECTIONS = 21 ;
 
-var g_targetCollisionCount  = 0 ;
+var TARGET_COLLISION_COUNT  = 0 ;
 
 const BODY_SIZE = 4 ; // controls the initial size of the snake
-// var SNAKE_SIZE = g_targetCollisionCount + 2;
 
 const MARGIN = 10 ; //enter the margin in percentage
 
-var snakeStatus = "fine" ; // if everything is good, then status == fine else game over
-var errorMessage = " "; // if there is an error, such as dying , print GAME OVER
+var SNAKE_STATUS = "fine" ; // if everything is good, then status == fine else state problem
+var GAME_STATUS = " "; // if there is an error, such as dying , print GAME OVER
 
 const CENTER_GRID = (NUM_OF_SECTIONS + 1)/2; // finds center of grid to show snake starts
-const g_initialX = CANVAS_SIZE/2;
-const g_initialY = CANVAS_SIZE/2;
+const INITIAL_X = CANVAS_SIZE/2;
+const INITIAL_Y = CANVAS_SIZE/2;
 
-const g_blockSize = CANVAS_SIZE/NUM_OF_SECTIONS; // makes a block size based on the canvas size and number of sections --- proportional --- will change as canvas size and number of sections changes
-const g_blockColor = 10;
-const g_headColor = 100;
+const BLOCK_SIZE = CANVAS_SIZE/NUM_OF_SECTIONS; // makes a block size based on the canvas size and number of sections --- proportional --- will change as canvas size and number of sections changes
+const BLOCK_COLOR = 10;
+const HEAD_COLOR = 100;
 
 const ARROW_DOWN = "ArrowDown";
 const ARROW_UP = "ArrowUp";
@@ -129,15 +130,15 @@ const ARROW_RIGHT = "ArrowRight";
 const ARROW_LEFT = "ArrowLeft";
 const SPACE_KEY = " ";
 
-var snakeBlockCurve = 5;
-var targetCurve = 20;
+var SNAKE_CURVE = 5;
+var TARGET_CURVE = 20;
 
 //returns a position object with pixel values, given the row and col of the grid
 function gridToPixel(rowGrid,colGrid){
 
     var col = colGrid - 1;
     var row = rowGrid - 1;
-    var positionObject = new Position(col*g_blockSize , row*g_blockSize);
+    var positionObject = new Position(col*BLOCK_SIZE , row*BLOCK_SIZE);
 
     return positionObject;
 
@@ -180,7 +181,7 @@ class Block {
         this.col = colGrid;
  
         // using the global constants
-        this.blockSize =  g_blockSize;
+        this.blockSize =  BLOCK_SIZE;
         this.blockColor =  color;
  
         this.curve = curve;
@@ -278,7 +279,7 @@ class Snake {
     createHead(){
 
         //this is the head block
-        var headBlock = new Block(CENTER_GRID, CENTER_GRID,SNAKE_COLORS.HEAD,snakeBlockCurve);
+        var headBlock = new Block(CENTER_GRID, CENTER_GRID,SNAKE_COLORS.HEAD,SNAKE_CURVE);
         headBlock.setDirection(this.turns.getLatestDirection());
         this.blocks.push(headBlock);
     
@@ -397,7 +398,7 @@ class Snake {
         }
 
         
-        var newBlock = new Block(newR,newC,SNAKE_COLORS.TAIL,snakeBlockCurve);
+        var newBlock = new Block(newR,newC,SNAKE_COLORS.TAIL,SNAKE_CURVE);
 
         newBlock.setDirection(this.getTail().direction);
 
@@ -616,8 +617,8 @@ class Snake {
 
                 this.setToHardStop();
 
-                snakeStatus = "eating self";
-                errorMessage = "GAME OVER!!!";
+                SNAKE_STATUS = "eating self";
+                GAME_STATUS = " ; GAME OVER!!!";
 
             }
 
@@ -699,7 +700,7 @@ class Target{
         var targetRow = this.getTargetPosition();
         var targetCol = this.getTargetPosition();
         
-        this.block = new Block(targetRow,targetCol,SNAKE_COLORS.TARGET,targetCurve);
+        this.block = new Block(targetRow,targetCol,SNAKE_COLORS.TARGET,TARGET_CURVE);
         
     }
 
@@ -845,20 +846,12 @@ function reachedTarget(){
 
 }
 
-//////////////////// MAIN FUNCTIONALITY /////////////////////
-//////////////////// MAIN FUNCTIONALITY /////////////////////
-//////////////////// MAIN FUNCTIONALITY /////////////////////
-//////////////////// MAIN FUNCTIONALITY /////////////////////
-//////////////////// MAIN FUNCTIONALITY /////////////////////
-
 //helps figure out which key has been pressed
 document.addEventListener("keydown",function(event) {
  
     onkeypressed(event);
 
 })
-
-//////////////////////// END OF MAIN ////////////////////////
 
 //provides ability to incoroporate sounds into game
 function sound(src) {
@@ -907,7 +900,7 @@ function divideCanvas(){
 
     for(var i = 0; i<NUM_OF_SECTIONS; i++){
 
-        var drawLines = i*g_blockSize;
+        var drawLines = i*BLOCK_SIZE;
 
         line(drawLines, 0, drawLines, CANVAS_SIZE);
         line(0, drawLines, CANVAS_SIZE, drawLines);
@@ -964,41 +957,49 @@ function repositionTarget(target) {
 //increments score count
 function increaseScoreCount() {
 
-    g_targetCollisionCount++;
+    TARGET_COLLISION_COUNT++;
 
 }
 
 //display the score count in a textbox
 function displayScore(){
 
-    document.getElementById("scoreCount").value = "Score Count = " + g_targetCollisionCount;
+    document.getElementById("scoreCount").value = "Score Count = " + TARGET_COLLISION_COUNT;
+    
+    //sets the position for textbox
+    scoreCount.style.position = 'absolute';  // position it
+    scoreCount.style.left = '34%';
+    scoreCount.style.top = '14%';  
 
 }
 
 //display the stats of the snake in a textbox
-function snakeStats(){
+function displayGameStats(){
     
-    document.getElementById("snakeStatus").value = "Snake is " + snakeStatus;
+    document.getElementById("gameStatus").value = "Snake is " + SNAKE_STATUS + GAME_STATUS;
 
-}
-
-//displays "GAME OVER!!!" whenever something goes wrong
-function displayErrorMessage(){
-
-    document.getElementById("errorMessage").value = errorMessage;
+    //sets the position for textbox
+    gameStatus.style.position = 'absolute';  // position it
+    gameStatus.style.left = '34%';
+    gameStatus.style.top = '78.5%';  
 
 }
 
 //displays the size of the snake
 function displaySnakeSize(){
 
-    var SNAKE_SIZE = g_targetCollisionCount + BODY_SIZE + 1;
+    var SNAKE_SIZE = TARGET_COLLISION_COUNT + BODY_SIZE + 1;
     document.getElementById("snakeSize").value = "Snake is " + SNAKE_SIZE + " blocks";
+
+    //sets the position for textbox
+    snakeSize.style.position = 'absolute';  // position it
+    snakeSize.style.left = '53.5%';
+    snakeSize.style.top = '78.5%';  
 
 }
 
-//determines and displays which mode the game is in
-function mode(){
+//determines which mode the game is in
+function calculateMode(){
 
     if(FRAME_RATE == FRAME_SPEED.VERY_SLOW){
 
@@ -1032,10 +1033,23 @@ function mode(){
 
 }
 
+//displays the mode off the game
 function displayMode(){
 
-    document.getElementById("mode").value = mode();
+    document.getElementById("displayTheMode").value = calculateMode();
+    
+    //sets the position for textbox
+    displayTheMode.style.position = 'absolute';  // position it
+    displayTheMode.style.left = '56%';
+    displayTheMode.style.top = '14%';  
 
+}
+
+//plays the soundtrack for the game
+function playGameSound(){
+
+    gameSoundTrack.play();
+    
 }
 
 //if the snakehead has reached the Target, 
@@ -1105,11 +1119,14 @@ function onkeypressed(event) {
   
 function setup(){
  
-//    createCanvas(CANVAS_SIZE,CANVAS_SIZE);
+   createCanvas(CANVAS_SIZE,CANVAS_SIZE);
+
+   //this is centering the canvas
+   canvas.style = "position:absolute; left: 45%; width: 600px; left: 850px;  margin-left: -200px; margin-top: 94px";
 
     frameRate(FRAME_RATE);
 
-//    intialSnakeGrow(mySnake);
+   intialSnakeGrow(mySnake);
     
    
 }
@@ -1120,56 +1137,51 @@ function setup(){
 /////////////////////////////////// DRAW ///////////////////////////////////
 /////////////////////////////////// DRAW ///////////////////////////////////
 
-function draw() {
+// function draw() {
 
     
-    setTimeout(function() {
-        show(Date.now());
+//     setTimeout(function() {
+//         show(Date.now());
 
-    },10000);
+//     },10000);
 
-}
-
-
-// function draw(){
-
-//     gameSoundtrack.play();
-    
-
-    
- 
-//     // create the background with the grid lines
-//     createBackgroundWithGridLines();
-
-//     //display the score count in a textbox
-//     displayScore();
-
-//     //display the stats of the snake in a textbox
-//     snakeStats();
-
-//     //displays "GAME OVER!!!" whenever something goes wrong
-//     displayErrorMessage();
-
-//     //displays the size of the snake
-//     displaySnakeSize();
-
-//     //displays what difficulty/speed mode/level the game is at
-//     displayMode();
-
-//     //if the snakehead has reached the Target, 
-//     //   target will disappear and reappear somewhere else
-//     //   increase the score count
-//     //   grow the snake
-//     //   else (snake head has not reached the target)
-//     //   do nothing 
-//     ifReachedTarget();
-
-//     myTarget.paint();
-
-//     // make the snake move
-//     makeSnakeMove(mySnake);
-    
 // }
+
+function draw(){
+
+    //plays the soundtrack for the game
+    playGameSound();
+
+ 
+    // create the background with the grid lines
+    createBackgroundWithGridLines();
+
+    //display the score count in a textbox
+    displayScore();
+
+    //display the stats of the game in a textbox
+    displayGameStats();
+
+    //displays the size of the snake
+    displaySnakeSize();
+
+    //displays what difficulty/speed mode/level the game is at
+    displayMode();
+
+    //if the snakehead has reached the Target, 
+    //   target will disappear and reappear somewhere else
+    //   increase the score count
+    //   grow the snake
+    //   else (snake head has not reached the target)
+    //   do nothing 
+    ifReachedTarget();
+
+    myTarget.paint();
+
+    // make the snake move
+    makeSnakeMove(mySnake);
+    
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1185,7 +1197,4 @@ var myTarget = new Target();
 eatingTargetSound = new sound("eatingTargetSound.wav");
 snakeSound = new sound("snakeSound.wav");
 deathSound = new sound("deathSound.wav");
-gameSoundtrack = new sound("gameSoundTrack.wav");
-
-
-
+gameSoundTrack = new sound("gameSoundTrack.wav");
