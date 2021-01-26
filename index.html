@@ -1,33 +1,49 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <!-- <h1 style="text-align-center;">SNAKE GAME</h1> -->
+ <html>
+   <title>SNAKE GAME</title>
+  
+ <head>
+   
   <style>
-    div.a {
-      text-align: center;
-    }
     
+    div.HEADER {
+      text-align: left;
+    }
+
+    #gameScreen{
+      border : 30px solid black;
+    }
+
   </style>
     
-    <div class="a">
-      <h2>SNAKE GAME</h2>
-    </div>
+  <div class="HEADER">
+    <h2>SNAKE GAME</h2>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js"></script>
     
-    <meta charset="utf-8"/>
-    <link href="style.css" rel="stylesheet" type="text/css">    
-  </head>
+  <meta charset="utf-8"/>
+
+ </head>
+
   <body>
 
+    <canvas id="gameScreen" width="800" height="800"></canvas>
+    
+    <!-- <input type="text" id="displayTheMode" name="displayTheMode"> -->
     <td><input type="text" id="scoreCount" name="scoreCount"></td>
-    <td><input type="text" id="displayTheMode" name="displayTheMode"></td>
     <td><input type="text" id="snakeSize" name="snakeSize" size="27"></td>
     <td><input type="text" id="gameStatus" name="gameStatus" size="27"></td>
+    
+    
+    <label for="speed">Select Game Speed:</label>
+    <input type="range" id="speed" name="speed" min="2" max="999">
 
+    <button id="Go" name="Go" type="button">Go</button>
 
-
-    <td><script src="Snake.js"></script>
-  </tr>
+    <script type="module" src="./src/game.js"></script>
+    
+    
+  
   </body>
 </html>
