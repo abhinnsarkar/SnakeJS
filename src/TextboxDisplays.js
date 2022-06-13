@@ -6,12 +6,12 @@ const fromLeft = '45.25%';
 export function displaySnakeSize(){
 
     var SNAKE_SIZE = gv.TARGET_COLLISION_COUNT/5 + gc.BODY_SIZE + 1;
-    document.getElementById("snakeSize").value = "Snake is " + SNAKE_SIZE + " blocks";
+    document.getElementById("snakeSize").innerHTML = "Snake is " + SNAKE_SIZE.toString() + " blocks";
 
     //sets the position for textbox
-    snakeSize.style.position = 'absolute';  // position it
-    snakeSize.style.left = fromLeft;
-    snakeSize.style.top = '7%';  
+    // snakeSize.style.position = 'absolute';  // position it
+    // snakeSize.style.left = fromLeft;
+    // snakeSize.style.top = '7%';  
 
 }
 
@@ -19,12 +19,12 @@ export function displaySnakeSize(){
 //display the score count in a textbox
 export function displayScore(){
 
-    document.getElementById("scoreCount").value = "Score Count = " + gv.TARGET_COLLISION_COUNT;
+    document.getElementById("scoreCount").innerHTML = "Score Count = " + gv.TARGET_COLLISION_COUNT.toString();
     
     //sets the position for textbox
-    scoreCount.style.position = 'absolute';  // position it
-    scoreCount.style.left = fromLeft;
-    scoreCount.style.top = '9.5%';  
+    // scoreCount.style.position = 'absolute';  // position it
+    // scoreCount.style.left = fromLeft;
+    // scoreCount.style.top = '9.5%';  
 
 }
 
@@ -32,11 +32,11 @@ export function displayScore(){
 //display the stats of the snake in a textbox
 export function displayGameStats(){
     
-    document.getElementById("gameStatus").value = "Snake is " + gv.SNAKE_STATUS + gv.GAME_STATUS;
+    document.getElementById("gameStatus").innerHTML = "Snake is " + gv.SNAKE_STATUS.toString() + gv.GAME_STATUS.toString();
 
     //sets the position for textbox
-    gameStatus.style.position = 'absolute';  // position it
-    gameStatus.style.left = fromLeft;
-    gameStatus.style.top = '12%';  
+    // gameStatus.style.position = 'absolute';  // position it
+    // gameStatus.style.left = fromLeft;
+    // gameStatus.style.top = '12%';  
 
 }

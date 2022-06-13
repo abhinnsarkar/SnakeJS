@@ -1,26 +1,37 @@
 <!DOCTYPE html>
  <html>
    <title>SNAKE GAME</title>
-  
+   <link rel="icon" href="logo.ico">
  <head>
    
   <style>
-    
-    div.HEADER {
-      text-align: left;
-    }
 
     #gameScreen{
       border : 30px solid black;
+      text-align: center;
+      align-self: center;
+    }
+    #canvas-container {
+      width: 100%;
+      text-align:center;
+    }
+
+    canvas {
+      display: inline;
+    }
+
+    #inputs{
+      overflow-x:auto;
+      width:fit-content;
+    }
+
+    body {
+      background-color: #1c6e17;
     }
 
   </style>
-    
-  <div class="HEADER">
-    <h2>SNAKE GAME</h2>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js"></script> -->
     
   <meta charset="utf-8"/>
 
@@ -28,22 +39,29 @@
 
   <body>
 
-    <canvas id="gameScreen" width="800" height="800"></canvas>
-    
-    <!-- <input type="text" id="displayTheMode" name="displayTheMode"> -->
-    <td><input type="text" id="scoreCount" name="scoreCount"></td>
-    <td><input type="text" id="snakeSize" name="snakeSize" size="27"></td>
-    <td><input type="text" id="gameStatus" name="gameStatus" size="27"></td>
-    
-    
-    <label for="speed">Select Game Speed:</label>
-    <input type="range" id="speed" name="speed" min="2" max="999">
+    <div id="canvas-container">
+      <canvas id="gameScreen"/>
+    </div>
 
-    <button id="Go" name="Go" type="button">Go</button>
+    <div 
+      id="inputs"
+      style="border: 2px solid green"
+    >
+      <td><label id="scoreCount">Score Count = 0</label></td>
+      <br>
+      <td><label id="snakeSize">Snake Size = 5</label></td>
+      <br>
+      <td><label id="gameStatus">Snake is fine</label></td>
+    </div>
+
+      <label>Select Game Speed:</label>
+      <input type="range" id="speed" name="speed" min="2" max="999">
+      <button id="Go" name="Go" type="button">Go</button>
+      
+    </div>
+    
 
     <script type="module" src="./src/game.js"></script>
     
-    
-  
   </body>
 </html>

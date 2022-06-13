@@ -963,25 +963,25 @@ function increaseScoreCount() {
 
 //display the score count in a textbox
 function displayScore(){
-
-    document.getElementById("scoreCount").value = "Score Count = " + TARGET_COLLISION_COUNT;
+    // console.log(TARGET_COLLISION_COUNT);
+    document.getElementById("scoreCount").innerHTML = "Score Count = " + TARGET_COLLISION_COUNT.toString();
     
     //sets the position for textbox
-    scoreCount.style.position = 'absolute';  // position it
-    scoreCount.style.left = '30.5%';
-    scoreCount.style.top = '8.5%';  
+    // scoreCount.style.position = 'absolute';  // position it
+    // scoreCount.style.left = '30.5%';
+    // scoreCount.style.top = '8.5%';  
 
 }
 
 //display the stats of the snake in a textbox
 function displayGameStats(){
     
-    document.getElementById("gameStatus").value = "Snake is " + SNAKE_STATUS + GAME_STATUS;
+    document.getElementById("gameStatus").innerHTML = "Snake is " + SNAKE_STATUS.toString() + GAME_STATUS.toString();
 
     //sets the position for textbox
-    gameStatus.style.position = 'absolute';  // position it
-    gameStatus.style.left = '30.5%';
-    gameStatus.style.top = '89.65%';  
+    // gameStatus.style.position = 'absolute';  // position it
+    // gameStatus.style.left = '30.5%';
+    // gameStatus.style.top = '89.65%';  
 
 }
 
@@ -989,12 +989,12 @@ function displayGameStats(){
 function displaySnakeSize(){
 
     var SNAKE_SIZE = TARGET_COLLISION_COUNT + BODY_SIZE + 1;
-    document.getElementById("snakeSize").value = "Snake is " + SNAKE_SIZE + " blocks";
+    document.getElementById("snakeSize").innerHTML = "Snake is " + SNAKE_SIZE.toString() + " blocks";
 
     //sets the position for textbox
-    snakeSize.style.position = 'absolute';  // position it
-    snakeSize.style.left = '58.7%';
-    snakeSize.style.top = '89.65%';  
+    // snakeSize.style.position = 'absolute';  // position it
+    // snakeSize.style.left = '58.7%';
+    // snakeSize.style.top = '89.65%';  
 
 }
 

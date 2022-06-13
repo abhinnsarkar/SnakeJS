@@ -46,10 +46,11 @@ export const gc = {
     
     
     
-    CANVAS_SIZE : 800,
+    // CANVAS_SIZE : 800,
+    CANVAS_SIZE : 0.33*window.innerWidth,
     
     //Number Of Sections has to be odd because otherwise, snake head will not be able to start in middle
-    NUM_OF_SECTIONS : 81,
+    NUM_OF_SECTIONS : 21,
     
     BODY_SIZE : 4, // controls the initial size of the snake
     
